@@ -1,0 +1,19 @@
+debug: true
+
+listen:
+  ip: '0.0.0.0'
+  port: 6543
+tls:
+  cert: null
+  key: null
+
+  swift:
+      keystone_url: 'https://x.y.zg/v3'
+      swift_url: 'https://x.y.z/v1'
+      admin:
+          os_user_id: null
+          os_user_password: null
+          os_user_project: null
+          os_user_domain: null
+      defaults:
+          domain: 'Users'

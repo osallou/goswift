@@ -1,0 +1,6 @@
+reno
+pbr
+flask
+flask-cors
+requests
+PyYAML
