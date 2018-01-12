@@ -5,6 +5,10 @@ import logging
 import requests
 import urllib
 from functools import wraps
+import hmac
+from hashlib import sha1
+from time import time
+import crypt
 
 import humanfriendly
 
@@ -143,8 +147,6 @@ def get_token(data):
     except Exception:
         logging.exception('Failed to get token for ' + data['user'])
         return None
-    logging.info(r.headers)
-    logging.info(r.json())
     return token
 
 
@@ -240,10 +242,32 @@ def get_project_containers(apiversion, project):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
-    r = requests.get(config['swift']['swift_url'] + '/AUTH_' + str(project) +'?format=json', headers=headers)
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
     if r.status_code != 200:
         abort(r.status_code)
     return jsonify({'containers': r.json()})
+
+@app.route('/api/<apiversion>/project/<project>/<container>/<path:filepath>', methods=['GET'])
+@requires_auth
+def download_via_tempurl(apiversion, project, container, filepath):
+    logging.error('Download '+str(filepath))
+    method = 'GET'
+    duration_in_seconds = 60
+    expires = int(time() + duration_in_seconds)
+    path = '/v1/AUTH_' + project + '/' + container + '/' + str(filepath)
+    key = crypt.crypt(project,'$6$' + config['salt_secret']).encode('utf-8')
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Account-Meta-Temp-URL-Key': key,
+    }
+    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
+    if not r.status_code == 204:
+        abort(500)
+    hmac_body = '%s\n%s\n%s' % (method, expires, path)
+    sig = hmac.new(key, hmac_body.encode('utf-8'), sha1).hexdigest()
+    s = '{host}/{path}?temp_url_sig={sig}&temp_url_expires={expires}'
+    tmpurl = s.format(host=config['swift']['swift_url'], path=path, sig=sig, expires=expires)
+    return jsonify({'url': tmpurl})
 
 @app.route('/api/<apiversion>/project/<project>/<container>', methods=['GET'])
 @requires_auth
@@ -265,7 +289,7 @@ def get_project_container(apiversion, project, container):
                 'X-Auth-Token': admin_token,
                 'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
             }
-            r = requests.post(config['swift']['swift_url'] + '/AUTH_' + str(project) , headers=headers)
+            r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
             if r.status_code != 200:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
                 #abort(r.status_code)
@@ -275,15 +299,15 @@ def get_project_container(apiversion, project, container):
         'X-Auth-Token': request.headers['X-Auth-Token'],
         'X-Container-Meta-Access-Control-Allow-Origin': '*',
     }
-    r = requests.post(config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container , headers=headers)
+    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
 
     # Get container info
-    r = requests.get(config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 200:
         abort(r.status_code)
-    return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container})
+    return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})
 
 
 if __name__ == "__main__":

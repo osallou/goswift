@@ -21,5 +21,22 @@ export class Container {
             }
         });
     }
+    static downloadContainerFile(bucket, path, filepath, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' +bucket + '/' + filepath,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            dataType: "json",
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to get tempurl: ' + error);
+                callback(null);
+            }
+        });
+    }
 
 }

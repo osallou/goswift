@@ -17,7 +17,7 @@ import IconButton from 'material-ui/IconButton';
 import { GridList, GridTile } from 'material-ui/GridList';
 import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
 import { Paper } from 'material-ui/Paper';
-
+import Snackbar from 'material-ui/Snackbar';
 
 
 class Home extends Component {
@@ -31,7 +31,8 @@ class Home extends Component {
             'fireRedirect': false,
             'container': null,
             'path': '/',
-            'files': []
+            'files': [],
+            'notif': false
         }
         this.getContainers();
         this.download = this.download.bind(this);
@@ -78,10 +79,25 @@ class Home extends Component {
       return containerFile.last_modified + ', size:' + num(containerFile.bytes);
   }
   download(containerFile){
+      var ctx = this;
       return function(){
-          console.log('Download ', containerFile, this.state);
+          console.log('Download ', containerFile, ctx.state);
+          Container.downloadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
+              if(res!==null && res.url !== undefined){
+                  window.open(res.url)
+              }
+              else {
+                  ctx.setState({'notif': true});
+              }
+              //console.log('tempurl: ',res);
+          });
         }
   }
+  handleRequestClose = () => {
+      this.setState({
+        notif: false,
+      });
+  };
   render() {
     return (
       <div className="row">
@@ -110,6 +126,12 @@ class Home extends Component {
                     <CreateNewFolderIcon/>
                 </GridTile>
             </GridList>
+            <Snackbar
+                open={this.state.notif}
+                message="Failed to download file"
+                autoHideDuration={4000}
+                onRequestClose={this.handleRequestClose}
+            />
             <GridList>
             {this.state.files.map((containerFile, index) =>(
                 <GridTile key={index}>
