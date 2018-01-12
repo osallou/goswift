@@ -1,10 +1,19 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { Auth } from './Auth';
 
 import './Header.css';
 
 class Header extends Component {
   render() {
+    let login = null;
+    let logout = null;
+    if(! Auth.isAuthenticated()) {
+        login = <li className="nav-item"><Link to='/login' className="nav-link">Login</Link></li>;
+    }
+    else {
+        logout = <li className="nav-item"><Link to='/logout' className="nav-link">Logout</Link></li>
+    }
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <Link to='/' className="navbar-brand">GoSwift</Link>
@@ -17,10 +26,8 @@ class Header extends Component {
                 <li className="nav-item active">
                   <Link to='/' className="navbar-brand">Home</Link>
                 </li>
-                <li className="nav-item">
-                  <Link to='/login' className="nav-link">Login</Link>
-
-                </li>
+                { login }
+                { logout }
               </ul>
             </div>
         </nav>

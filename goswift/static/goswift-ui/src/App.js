@@ -1,28 +1,16 @@
 import React, { Component } from 'react';
 import Header from './Header';
 import Home from './Home';
-import Login from './Login';
+import {Login, Logout} from './Login';
 import { Switch, Route, Redirect } from 'react-router-dom'
+import { Auth } from './Auth';
 
 import './App.css';
 
-const auth = {
-    isAuthenticated: function(){
-        var token = localStorage.getItem('goswift-token');
-        if(token === undefined || token === null){
-            console.log('not authenticated');
-            return false;
-        }
-        else{
-            console.log('authenticated');
-            return true;
-        }
-    }
-}
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route {...rest} render={props => (
-    auth.isAuthenticated() ? (
+    Auth.isAuthenticated() ? (
       <Component {...props}/>
     ) : (
       <Redirect to={{
@@ -41,6 +29,7 @@ class App extends Component {
         <Switch>
           <PrivateRoute exact path='/' component={Home}/>
           <Route exact path='/login' component={Login}/>
+          <Route exact path='/logout' component={Logout}/>
         </Switch>
       </div>
     );

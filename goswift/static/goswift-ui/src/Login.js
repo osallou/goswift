@@ -3,8 +3,21 @@ import { Card, CardText } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import { Auth } from './Auth';
+import { Redirect } from 'react-router-dom'
 
-class Login extends Component {
+export class Logout extends Component {
+    constructor(props) {
+        super(props);
+        Auth.logout();
+    }
+    render() {
+        return (
+            <Redirect to="/login"/>
+        )
+    }
+}
+
+export class Login extends Component {
   constructor(props) {
       super(props);
       this.state = {
@@ -14,7 +27,8 @@ class Login extends Component {
               'user': '',
               'password': ''
           },
-          'errors': null
+          'errors': null,
+          'fireRedirect': false
 
       }
       this.handleSubmit = this.handleSubmit.bind(this);
@@ -26,10 +40,10 @@ class Login extends Component {
       var ctx = this;
       Auth.login(this.state.login, function(res){
          if(res.status) {
-             ctx.setState({'login': ctx.state.login, 'errors': null})
+             ctx.setState({'login': ctx.state.login, 'errors': null, 'fireRedirect': true});
          }
          else {
-             ctx.setState({'login': ctx.state.login, 'errors': res.msg});
+             ctx.setState({'login': ctx.state.login, 'errors': res.msg, 'fireRedirect': false});
 
          }
       });
@@ -49,6 +63,7 @@ class Login extends Component {
     }
     return (
       <div>
+        {this.state.fireRedirect && (<Redirect to={'/'}/>)}
         <Card className="container">
             <form action="/" onSubmit={this.handleSubmit}>
                 <h2 className="card-heading">Login</h2>
@@ -92,4 +107,4 @@ class Login extends Component {
   }
 }
 
-export default Login;
+//export default Login;

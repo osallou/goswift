@@ -6,6 +6,8 @@ import requests
 import urllib
 from functools import wraps
 
+import humanfriendly
+
 from flask import Flask
 from flask import jsonify
 from flask import request
@@ -101,6 +103,49 @@ DEFAULT_VERSION = V1Controller.version_string
 
 app = Flask(__name__)
 CORS(app)
+
+def get_token(data):
+    auth = {
+        'auth': {
+            'scope':
+                {'project': {
+                    'name': data['project'],
+                    'domain':
+                        {
+                            'name': data['domain']
+                        }
+                    }
+                 },
+            'identity': {
+                    'password': {
+                        'user': {
+                            'domain': {
+                                'name': data['domain']
+                            },
+                            'password': data['password'],
+                            'name': data['user']
+                        }
+                    },
+                    'methods': ['password']
+                }
+        }
+    }
+
+    token = None
+
+    try:
+        ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+        r = requests.post(ks_url, json=auth)
+        if not r.status_code == 201:
+            logging.info('Authentication failed: %s' + str(data['user']))
+            abort(401)
+        token = r.headers['X-Subject-Token']
+    except Exception:
+        logging.exception('Failed to get token for ' + data['user'])
+        return None
+    logging.info(r.headers)
+    logging.info(r.json())
+    return token
 
 
 def requires_auth(f):
@@ -198,7 +243,47 @@ def get_project_containers(apiversion, project):
     r = requests.get(config['swift']['swift_url'] + '/AUTH_' + str(project) +'?format=json', headers=headers)
     if r.status_code != 200:
         abort(r.status_code)
-    return jsonify({'containers:': r.json()})
+    return jsonify({'containers': r.json()})
+
+@app.route('/api/<apiversion>/project/<project>/<container>', methods=['GET'])
+@requires_auth
+def get_project_container(apiversion, project, container):
+    '''
+    Set quotas and CORS
+    '''
+    # Set quota for user project
+    if config['swift']['quotas']:
+        admin_token = get_token({
+            'user': config['swift']['admin']['os_user_id'],
+            'password': config['swift']['admin']['os_user_password'],
+            'domain': config['swift']['admin']['os_user_domain'],
+            'project': config['swift']['admin']['os_user_project']
+        })
+
+        if admin_token:
+            headers = {
+                'X-Auth-Token': admin_token,
+                'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
+            }
+            r = requests.post(config['swift']['swift_url'] + '/AUTH_' + str(project) , headers=headers)
+            if r.status_code != 200:
+                logging.error('Quota error for ' + str(project) + ':' + r.text)
+                #abort(r.status_code)
+
+    # Set CORS for container
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Container-Meta-Access-Control-Allow-Origin': '*',
+    }
+    r = requests.post(config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+
+    # Get container info
+    r = requests.get(config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 200:
+        abort(r.status_code)
+    return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/AUTH_' + str(project) + '/' + container})
 
 
 if __name__ == "__main__":
