@@ -1,5 +1,7 @@
 debug: true
 
+salt_secret: 'xyz' # unique secret used to hash projects to generate tmpurls
+
 listen:
   ip: '0.0.0.0'
   port: 6543
@@ -9,7 +11,7 @@ tls:
 
   swift:
       keystone_url: 'https://x.y.zg/v3'
-      swift_url: 'https://x.y.z/v1'
+      swift_url: 'https://x.y.z' # without /v1
       admin:
           os_user_id: null
           os_user_password: null

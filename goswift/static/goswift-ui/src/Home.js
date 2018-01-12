@@ -4,19 +4,20 @@ import { Redirect } from 'react-router-dom'
 import $ from 'jquery';
 import num from 'pretty-bytes';
 import { Container } from './Container';
-import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
-import ActionInfo from 'material-ui/svg-icons/action/info';
+// import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
+import FlatButton from 'material-ui/FlatButton';
+// import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
-import FolderIcon from 'material-ui-icons/Folder';
+// import FolderIcon from 'material-ui-icons/Folder';
 import DeleteIcon from 'material-ui-icons/Delete';
 import ShareIcon from 'material-ui-icons/Share';
+import Dialog from 'material-ui/Dialog';
 
 import IconButton from 'material-ui/IconButton';
 import { GridList, GridTile } from 'material-ui/GridList';
 import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
-import { Paper } from 'material-ui/Paper';
 import Snackbar from 'material-ui/Snackbar';
 
 
@@ -30,9 +31,13 @@ class Home extends Component {
             'token': auth.token,
             'fireRedirect': false,
             'container': null,
+            'swift_url': null,
             'path': '/',
             'files': [],
-            'notif': false
+            'notif': false,
+            'notif_msg': '',
+            'dialog': false,
+            'dialog_msg': ''
         }
         this.getContainers();
         this.download = this.download.bind(this);
@@ -72,13 +77,33 @@ class Home extends Component {
               return;
           }
          console.log('container details', res);
-         ctx.setState({'files': res.container});
+         ctx.setState({'files': res.container, 'swift_url': res.url});
       });
   }
   secondaryInfo(containerFile){
       return containerFile.last_modified + ', size:' + num(containerFile.bytes);
   }
-  download(containerFile){
+  deleteFile(containerFile, index){
+      var ctx = this;
+      return function(){
+          console.log('Download ', containerFile, ctx.state);
+          Container.deleteContainerFile(ctx.state.swift_url, containerFile.name, function(res){
+              console.log('delete', res)
+              if(res!==null){
+                  var files = ctx.state.files;
+                  var container = ctx.state.container;
+                  container.count -= 1;
+                  files.splice(index, 1);
+                  ctx.setState({'notif': true, 'notif_msg': 'File deleted', 'files': files, 'container': container});
+              }
+              else {
+                  ctx.setState({'notif': true, 'notif_msg': 'Failed to delete file'});
+              }
+              //console.log('tempurl: ',res);
+          });
+        }
+  }
+  download(containerFile, index){
       var ctx = this;
       return function(){
           console.log('Download ', containerFile, ctx.state);
@@ -87,18 +112,60 @@ class Home extends Component {
                   window.open(res.url)
               }
               else {
-                  ctx.setState({'notif': true});
+                  ctx.setState({'notif': true, 'notif_msg': 'Failed to download file'});
               }
               //console.log('tempurl: ',res);
           });
         }
   }
-  handleRequestClose = () => {
+  uploadFile(containerFile){
+      var ctx = this;
+      Container.getTmpUrlForUploadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
+
+      });
+  }
+  share(containerFile, index){
+      var ctx = this;
+      return function(){
+          console.log('Share ', containerFile, ctx.state);
+          Container.downloadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
+              if(res!==null && res.url !== undefined){
+                  var files = ctx.state.files;
+                  //files[index].tmpurl = res.url;
+                  ctx.setState({
+                    'notif': true,
+                    'notif_msg': 'Share url, valid for 30 days',
+                    'files': files,
+                    'dialog': true,
+                    'dialog_msg': res.url
+                })
+              }
+              else {
+                  ctx.setState({'notif': true, 'notif_msg': 'Failed to create a temporary url'});
+              }
+              //console.log('tempurl: ',res);
+          });
+        }
+  }
+  handleNotifClose = () => {
       this.setState({
         notif: false,
       });
   };
+  handleDialogClose = () => {
+      this.setState({
+        dialog: false
+      });
+  };
   render() {
+      const actions = [
+            <FlatButton
+              label="Close"
+              primary={true}
+              keyboardFocused={true}
+              onClick={this.handleDialogClose}
+            />,
+          ];
     return (
       <div className="row">
       {this.state.fireRedirect && (<Redirect to={'/'}/>)}
@@ -128,23 +195,33 @@ class Home extends Component {
             </GridList>
             <Snackbar
                 open={this.state.notif}
-                message="Failed to download file"
+                message={this.state.notif_msg}
                 autoHideDuration={4000}
-                onRequestClose={this.handleRequestClose}
+                onRequestClose={this.handleNotifClose}
             />
+            <Dialog
+              title="Share temporary url"
+              modal={true}
+              actions={actions}
+              open={this.state.dialog}
+              onRequestClose={this.handleDialogClose}
+            >
+              {this.state.dialog_msg}
+            </Dialog>
             <GridList>
             {this.state.files.map((containerFile, index) =>(
                 <GridTile key={index}>
                 <Card>
                     <CardHeader title={containerFile.name} subtitle={this.secondaryInfo(containerFile)}/>
+                    {containerFile.tmpurl && <CardText className="text-muted"><small>{containerFile.tmpurl}</small></CardText>}
                     <CardActions>
-                                <IconButton aria-label="Delete">
+                                <IconButton aria-label="Delete" onClick={this.deleteFile(containerFile, index)}>
                                   <DeleteIcon />
                                 </IconButton>
-                                <IconButton aria-label="Share">
+                                <IconButton aria-label="Share" onClick={this.share(containerFile, index)}>
                                   <ShareIcon />
                                 </IconButton>
-                                <IconButton aria-label="Download" onClick={this.download(containerFile)}>
+                                <IconButton aria-label="Download" onClick={this.download(containerFile, index)}>
                                   <CloudDownloadIcon />
                                 </IconButton>
                     </CardActions>

@@ -247,12 +247,24 @@ def get_project_containers(apiversion, project):
         abort(r.status_code)
     return jsonify({'containers': r.json()})
 
+
 @app.route('/api/<apiversion>/project/<project>/<container>/<path:filepath>', methods=['GET'])
 @requires_auth
 def download_via_tempurl(apiversion, project, container, filepath):
-    logging.error('Download '+str(filepath))
-    method = 'GET'
-    duration_in_seconds = 60
+    ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Subject-Token': request.headers['X-Auth-Token']
+    }
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    r_json = r.json()
+    if r_json['token']['project']['id'] != project:
+        abort(403)
+
+    method = request.args.get('method', 'GET')
+    duration_in_seconds = 3600 * 24 * 30 # 30 days
     expires = int(time() + duration_in_seconds)
     path = '/v1/AUTH_' + project + '/' + container + '/' + str(filepath)
     key = crypt.crypt(project,'$6$' + config['salt_secret']).encode('utf-8')
@@ -268,6 +280,7 @@ def download_via_tempurl(apiversion, project, container, filepath):
     s = '{host}/{path}?temp_url_sig={sig}&temp_url_expires={expires}'
     tmpurl = s.format(host=config['swift']['swift_url'], path=path, sig=sig, expires=expires)
     return jsonify({'url': tmpurl})
+
 
 @app.route('/api/<apiversion>/project/<project>/<container>', methods=['GET'])
 @requires_auth
