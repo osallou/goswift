@@ -2,24 +2,19 @@ import React, { Component } from 'react';
 import { Auth } from './Auth';
 import { Redirect } from 'react-router-dom'
 import $ from 'jquery';
-import num from 'pretty-bytes';
+// import num from 'pretty-bytes';
 import { Container } from './Container';
+import ContainerFile from './ContainerFile';
 // import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
 import FlatButton from 'material-ui/FlatButton';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
-import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
-import FolderIcon from 'material-ui-icons/Folder';
-import DeleteIcon from 'material-ui-icons/Delete';
-import ShareIcon from 'material-ui-icons/Share';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
 
-import IconButton from 'material-ui/IconButton';
 import { GridList, GridTile } from 'material-ui/GridList';
-import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
 import Snackbar from 'material-ui/Snackbar';
 
 class Home extends Component {
@@ -46,6 +41,11 @@ class Home extends Component {
         this.getContainers();
         this.changeFolder = this.changeFolder.bind(this);
         this.createFolder = this.createFolder.bind(this);
+        this.share = this.share.bind(this);
+        this.download = this.download.bind(this);
+        this.deleteFile = this.deleteFile.bind(this);
+        this.gotoFolder = this.gotoFolder.bind(this);
+        this.gotoFolderIndex = this.gotoFolderIndex.bind(this);
   }
   getContainers() {
       var ctx = this;
@@ -80,7 +80,7 @@ class Home extends Component {
           }
           ctx.setState({'path': newpath, 'linearpath': newpath.join('')});
           Container.listContainerDirectory(ctx.state.swift_url, newpath.join(''), function(res){
-              console.log(res);
+              console.log('new folder:',res);
               ctx.setState({'files': res});
           });
       }
@@ -88,17 +88,17 @@ class Home extends Component {
   }
   gotoFolder(folder){
       var ctx = this;
-      return function(){
+      //return function(){
           console.log('request folder ', folder);
-          var subpath = ctx.state.path;
-          subpath.push(folder);
+          var subpath = ctx.state.path.concat(folder);
+          //subpath.push(folder);
           //console.log('Go to folder ', subpath);
           ctx.setState({'path': subpath, 'linearpath': subpath.join('')});
           Container.listContainerDirectory(ctx.state.swift_url, subpath.join(''), function(res){
-              console.log(res);
+              console.log('folder change', folder, res);
               ctx.setState({'files': res});
           });
-      };
+      //};
   }
   showContainer(index){
       // request will by the same time set quotas and enable cors
@@ -115,73 +115,55 @@ class Home extends Component {
          ctx.setState({'files': res.container, 'swift_url': res.url});
       });
   }
-  secondaryInfo(containerFile){
-      return containerFile.last_modified + ', size:' + num(containerFile.bytes);
-  }
-  deleteFile(containerFile, index){
-      var ctx = this;
-      return function(){
-          console.log('Download ', containerFile, ctx.state);
-          Container.deleteContainerFile(ctx.state.swift_url, containerFile.name, function(res){
-              console.log('delete', res)
-              if(res!==null){
-                  var files = ctx.state.files;
-                  var container = ctx.state.container;
-                  container.count -= 1;
-                  files.splice(index, 1);
-                  ctx.setState({'notif': true, 'notif_msg': 'File deleted', 'files': files, 'container': container});
-              }
-              else {
-                  ctx.setState({'notif': true, 'notif_msg': 'Failed to delete file'});
-              }
-              //console.log('tempurl: ',res);
-          });
-        }
-  }
-  download(containerFile, index){
-      var ctx = this;
-      return function(){
-          console.log('Download ', containerFile, ctx.state);
-          Container.downloadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
-              if(res!==null && res.url !== undefined){
-                  window.open(res.url)
-              }
-              else {
-                  ctx.setState({'notif': true, 'notif_msg': 'Failed to download file'});
-              }
-              //console.log('tempurl: ',res);
-          });
-        }
-  }
   uploadFile(containerFile){
       var ctx = this;
       Container.getTmpUrlForUploadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
 
       });
   }
-  share(containerFile, index){
-      var ctx = this;
-      return function(){
-          console.log('Share ', containerFile, ctx.state);
-          Container.downloadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
-              if(res!==null && res.url !== undefined){
-                  var files = ctx.state.files;
-                  //files[index].tmpurl = res.url;
-                  ctx.setState({
-                    'notif': true,
-                    'notif_msg': 'Share url, valid for 30 days',
-                    'files': files,
-                    'dialog': true,
-                    'dialog_msg': res.url,
-                    'newFolder':  ''
-                })
-              }
-              else {
-                  ctx.setState({'notif': true, 'notif_msg': 'Failed to create a temporary url'});
-              }
-              //console.log('tempurl: ',res);
+  deleteFile(msg){
+      console.log('delete event', msg);
+      if(msg.error){
+          this.setState({
+                  'notif': true,
+                  'notif_msg': msg.error,
+          })
+      }
+      else {
+          this.getContainers();
+          this.setState({'notif': true, 'notif_msg': 'File deleted'});
+          var ctx = this;
+          Container.listContainerDirectory(this.state.swift_url, this.state.path.join(''), function(res){
+              console.log(res);
+              ctx.setState({'files': res});
           });
-        }
+      }
+  }
+  download(msg){
+      console.log('download event', msg);
+      if(msg.error){
+          this.setState({
+                  'notif': true,
+                  'notif_msg': msg.error,
+          })
+      }
+  }
+  share(msg){
+      console.log('share event', msg);
+      if(msg.error){
+          this.setState({
+                  'notif': true,
+                  'notif_msg': msg.error,
+          })
+      }
+      else{
+          this.setState({
+                  'notif': true,
+                  'notif_msg': 'Share url, valid for 30 days',
+                  'dialog': true,
+                  'dialog_msg': msg.url,
+          })
+      }
   }
   changeFolder(event){
       var ctx = this;
@@ -196,10 +178,13 @@ class Home extends Component {
               ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'})
               return;
           }
-          console.log('should create', ctx.state.newFolder);
-          Container.createDirectory(ctx.state.swift_url, ctx.state.newFolder, function(res){
+          console.log('should create', ctx.state.path, ctx.state.newFolder);
+          Container.createDirectory(ctx.state.swift_url, ctx.state.path, ctx.state.newFolder, function(res){
               ctx.setState({'newFolder': ''});
               console.log(res);
+              Container.listContainerDirectory(ctx.state.swift_url, ctx.state.path.join(''), function(res){
+                  ctx.setState({'files': res});
+              });
           })
       }
   }
@@ -229,7 +214,7 @@ class Home extends Component {
             <h4>Containers</h4>
             <ul className="nav nav-pills flex-column">
             {this.state.containers.map((container, index) => (
-                <li onClick={this.showContainer.bind(this, index)} key={index} data-toggle="tooltip" data-placement="right"  title={container.last_modified} className="nav-item nav-link active">{container.name} <span className="badge badge-light">{container.count}</span></li>
+                <li onClick={this.showContainer.bind(this, index)} key={container.name} data-toggle="tooltip" data-placement="right"  title={container.last_modified} className="nav-item nav-link active">{container.name} <span className="badge badge-light">{container.count}</span></li>
             ))}
             </ul>
         </div>
@@ -273,26 +258,17 @@ class Home extends Component {
             </Dialog>
             <GridList>
             {this.state.files.map((containerFile, index) =>(
-                <GridTile key={index}>
-                <Card>
-                    {containerFile.content_type !== 'application/directory' && <CardHeader title={containerFile.name.replace(this.state.linearpath,'')} subtitle={this.secondaryInfo(containerFile)}></CardHeader>}
-                    {containerFile.content_type === 'application/directory' && <CardHeader title={containerFile.name.replace(this.state.linearpath,'')} onClick={this.gotoFolder(containerFile.name)}><FolderIcon/></CardHeader>}
+                <GridTile key={containerFile.name}>
+                <ContainerFile
+                    swift_url={this.state.swift_url}
+                    file={containerFile}
+                    bucket={this.state.container.name}
+                    onShare={this.share}
+                    onDownload={this.download}
+                    onDelete={this.deleteFile}
+                    onClick={this.gotoFolder}
+                />
 
-                    {containerFile.tmpurl && <CardText className="text-muted"><small>{containerFile.tmpurl}</small></CardText>}
-                    <CardActions>
-                        <IconButton aria-label="Delete" onClick={this.deleteFile(containerFile, index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                        {containerFile.content_type !== 'application/directory' &&  <IconButton aria-label="Share" onClick={this.share(containerFile, index)}>
-                                  <ShareIcon />
-                                </IconButton>
-                        }
-                        {containerFile.content_type !== 'application/directory' &&  <IconButton aria-label="Download" onClick={this.download(containerFile, index)}>
-                                  <CloudDownloadIcon />
-                                </IconButton>
-                        }
-                    </CardActions>
-                </Card>
                 </GridTile>
 
             ))}

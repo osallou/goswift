@@ -88,11 +88,11 @@ export class Container {
             }
         });
     }
-    static createDirectory(url, filepath, callback){
+    static createDirectory(url, basepath, filepath, callback){
         var authData = Auth.getAuthData();
-        var dirpath = filepath;
+        var dirpath = basepath.join('') + filepath.trim();
         if(! filepath.endsWith('/')){
-            dirpath = filepath + '/';
+            dirpath = basepath.join('') + filepath.trim() + '/';
         }
         $.ajax({
             url: url + '/' + dirpath +'?format=json',
