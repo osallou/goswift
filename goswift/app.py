@@ -317,7 +317,7 @@ def get_project_container(apiversion, project, container):
         abort(r.status_code)
 
     # Get container info
-    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=/&prefix=' , headers=headers)
     if r.status_code != 200:
         abort(r.status_code)
     return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})

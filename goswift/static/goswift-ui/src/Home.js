@@ -10,16 +10,17 @@ import FlatButton from 'material-ui/FlatButton';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
-// import FolderIcon from 'material-ui-icons/Folder';
+import FolderIcon from 'material-ui-icons/Folder';
 import DeleteIcon from 'material-ui-icons/Delete';
 import ShareIcon from 'material-ui-icons/Share';
 import Dialog from 'material-ui/Dialog';
+import TextField from 'material-ui/TextField';
+import Divider from 'material-ui/Divider';
 
 import IconButton from 'material-ui/IconButton';
 import { GridList, GridTile } from 'material-ui/GridList';
 import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
 import Snackbar from 'material-ui/Snackbar';
-
 
 class Home extends Component {
   constructor(props) {
@@ -32,15 +33,19 @@ class Home extends Component {
             'fireRedirect': false,
             'container': null,
             'swift_url': null,
-            'path': '/',
+            'path': [],
+            'linearpath': '',
             'files': [],
             'notif': false,
             'notif_msg': '',
             'dialog': false,
-            'dialog_msg': ''
+            'dialog_msg': '',
+            'newFolder': ''
         }
+        this.uploader = null;
         this.getContainers();
-        this.download = this.download.bind(this);
+        this.changeFolder = this.changeFolder.bind(this);
+        this.createFolder = this.createFolder.bind(this);
   }
   getContainers() {
       var ctx = this;
@@ -65,12 +70,42 @@ class Home extends Component {
           }
       });
   }
+  gotoFolderIndex(folderIndex){
+      var ctx = this;
+      return function(){
+          console.log("go to folderindex ", folderIndex);
+          var newpath = [];
+          if(folderIndex > -1){
+              newpath = ctx.state.path.slice(0, folderIndex + 1);
+          }
+          ctx.setState({'path': newpath, 'linearpath': newpath.join('')});
+          Container.listContainerDirectory(ctx.state.swift_url, newpath.join(''), function(res){
+              console.log(res);
+              ctx.setState({'files': res});
+          });
+      }
+
+  }
+  gotoFolder(folder){
+      var ctx = this;
+      return function(){
+          console.log('request folder ', folder);
+          var subpath = ctx.state.path;
+          subpath.push(folder);
+          //console.log('Go to folder ', subpath);
+          ctx.setState({'path': subpath, 'linearpath': subpath.join('')});
+          Container.listContainerDirectory(ctx.state.swift_url, subpath.join(''), function(res){
+              console.log(res);
+              ctx.setState({'files': res});
+          });
+      };
+  }
   showContainer(index){
       // request will by the same time set quotas and enable cors
       this.setState({'container': this.state.containers[index]});
       console.log('Get container info for ', this.state.containers[index]);
       var ctx = this;
-      Container.getContainerDetails(this.state.containers[index]['name'], this.state.path, function(res){
+      Container.getContainerDetails(this.state.containers[index].name, this.state.path, function(res){
           if(res === null) {
               Auth.logout();
               ctx.setState({'fireRedirect': true});
@@ -137,7 +172,8 @@ class Home extends Component {
                     'notif_msg': 'Share url, valid for 30 days',
                     'files': files,
                     'dialog': true,
-                    'dialog_msg': res.url
+                    'dialog_msg': res.url,
+                    'newFolder':  ''
                 })
               }
               else {
@@ -146,6 +182,26 @@ class Home extends Component {
               //console.log('tempurl: ',res);
           });
         }
+  }
+  changeFolder(event){
+      var ctx = this;
+      return function(event){
+        ctx.setState({'newFolder': event.target.value});
+      }
+  }
+  createFolder(){
+      var ctx = this;
+      return function() {
+          if(ctx.state.swift_url === null) {
+              ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'})
+              return;
+          }
+          console.log('should create', ctx.state.newFolder);
+          Container.createDirectory(ctx.state.swift_url, ctx.state.newFolder, function(res){
+              ctx.setState({'newFolder': ''});
+              console.log(res);
+          })
+      }
   }
   handleNotifClose = () => {
       this.setState({
@@ -180,8 +236,9 @@ class Home extends Component {
         <div className="col-sm">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-              {this.state.path.split('/').map((cpath, index) => (
-                  <li key={index} className="breadcrumb-item">{cpath}</li>
+                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>root</li>
+              {this.state.path.map((cpath, index) => (
+                  <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}
               </ol>
             </nav>
@@ -190,9 +247,15 @@ class Home extends Component {
                     <CloudUploadIcon/>
                 </GridTile>
                 <GridTile key="2" col="1" title="Create folder">
-                    <CreateNewFolderIcon/>
+                <TextField
+                    floatingLabelText="folder name"
+                    name="newFolder"
+                    onChange={this.changeFolder()}
+                    value={this.state.newFolder}/>
+                    <CreateNewFolderIcon onClick={this.createFolder()}/>
                 </GridTile>
             </GridList>
+            <Divider />
             <Snackbar
                 open={this.state.notif}
                 message={this.state.notif_msg}
@@ -212,18 +275,22 @@ class Home extends Component {
             {this.state.files.map((containerFile, index) =>(
                 <GridTile key={index}>
                 <Card>
-                    <CardHeader title={containerFile.name} subtitle={this.secondaryInfo(containerFile)}/>
+                    {containerFile.content_type !== 'application/directory' && <CardHeader title={containerFile.name.replace(this.state.linearpath,'')} subtitle={this.secondaryInfo(containerFile)}></CardHeader>}
+                    {containerFile.content_type === 'application/directory' && <CardHeader title={containerFile.name.replace(this.state.linearpath,'')} onClick={this.gotoFolder(containerFile.name)}><FolderIcon/></CardHeader>}
+
                     {containerFile.tmpurl && <CardText className="text-muted"><small>{containerFile.tmpurl}</small></CardText>}
                     <CardActions>
-                                <IconButton aria-label="Delete" onClick={this.deleteFile(containerFile, index)}>
-                                  <DeleteIcon />
-                                </IconButton>
-                                <IconButton aria-label="Share" onClick={this.share(containerFile, index)}>
+                        <IconButton aria-label="Delete" onClick={this.deleteFile(containerFile, index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                        {containerFile.content_type !== 'application/directory' &&  <IconButton aria-label="Share" onClick={this.share(containerFile, index)}>
                                   <ShareIcon />
                                 </IconButton>
-                                <IconButton aria-label="Download" onClick={this.download(containerFile, index)}>
+                        }
+                        {containerFile.content_type !== 'application/directory' &&  <IconButton aria-label="Download" onClick={this.download(containerFile, index)}>
                                   <CloudDownloadIcon />
                                 </IconButton>
+                        }
                     </CardActions>
                 </Card>
                 </GridTile>

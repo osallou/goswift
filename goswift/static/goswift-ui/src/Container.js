@@ -2,11 +2,27 @@ import $ from 'jquery';
 import { Auth } from './Auth';
 
 export class Container {
-
+    static listContainerDirectory(url, filepath, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: url + '?format=json&path=' + filepath+'&delimiter=/&prefix=',
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            dataType: "json",
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to delete: ' + error);
+                callback(null);
+            }
+        });
+    }
     static getContainerDetails(bucket, path, callback){
         var authData = Auth.getAuthData();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' +bucket,
+            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
@@ -68,6 +84,29 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to delete: ' + error);
+                callback(null);
+            }
+        });
+    }
+    static createDirectory(url, filepath, callback){
+        var authData = Auth.getAuthData();
+        var dirpath = filepath;
+        if(! filepath.endsWith('/')){
+            dirpath = filepath + '/';
+        }
+        $.ajax({
+            url: url + '/' + dirpath +'?format=json',
+            beforeSend: function(xhr){
+                xhr.setRequestHeader('X-Auth-Token', authData.token);
+                xhr.setRequestHeader('Content-Type', 'application/directory');
+            },
+            type: "PUT",
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to add directory: ' + error);
                 callback(null);
             }
         });
