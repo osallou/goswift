@@ -22,7 +22,7 @@ class ContainerFile extends Component {
           console.log('new file',this.state.file);
       }
     componentWillReceiveProps(nextProps){
-        if(nextProps.file !== undefined && nextProps.file.last_modified != this.state.file.last_modified){
+        if(nextProps.file !== undefined && nextProps.file.last_modified !== this.state.file.last_modified){
             this.setState({'file': nextProps.file});
         }
     }

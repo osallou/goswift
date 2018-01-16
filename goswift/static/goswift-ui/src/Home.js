@@ -11,7 +11,7 @@ import ContainerFile from './ContainerFile';
 import FlatButton from 'material-ui/FlatButton';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
-import CloudUploadIcon from 'material-ui-icons/CloudUpload';
+// import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
@@ -128,12 +128,6 @@ class Home extends Component {
          ctx.setState({'files': res.container, 'swift_url': res.url});
       });
   }
-  uploadFile(containerFile){
-      var ctx = this;
-      Container.getTmpUrlForUploadContainerFile(ctx.state.container.name, ctx.state.path, containerFile.name, function(res){
-
-      });
-  }
   deleteFile(msg){
       console.log('delete event', msg);
       if(msg.error){
@@ -207,16 +201,22 @@ class Home extends Component {
         dialog: false
       });
   };
+  /*
   componentDidUpdate(prevProps, prevState){
       console.log('homeupdate', prevProps, prevState, this.state);
   }
+  */
   fileUpload(file){
       console.log('file upload', file);
       console.log('state', this.state);
       var uploadFiles = this.state.uploads.slice();
       uploadFiles.push(file);
       console.log('uploads', uploadFiles);
-      this.setState({'uploads': uploadFiles});
+      // this.setState({'uploads': uploadFiles});
+      this.setState((state) => {
+          state.uploads = state.uploads.concat([file]);
+          return state;
+      })
   }
   fileUploadProgress(file){
       var uploadFiles = this.state.uploads.slice();

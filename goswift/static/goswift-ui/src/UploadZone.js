@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import $ from 'jquery';
-import num from 'pretty-bytes';
-import { Container } from './Container';
 import Dropzone from 'react-dropzone';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
-import { Card } from 'material-ui/Card';
 import { Auth } from './Auth';
 
 import './UploadZone.css';
@@ -15,8 +12,8 @@ class UploadZone extends Component {
           this.state = {
               'swift_url': props.swift_url,
               'path': props.path,
-              'progress': [],
-              'total': [],
+              //'progress': [],
+              //'total': [],
               'onUpload': props.onUpload,
               'onError': props.onError,
               'onProgress': props.onProgress,
@@ -63,26 +60,23 @@ class UploadZone extends Component {
       return file.id;
   }
   uploadFile(file, index){
-      var ctx = this;
       if(this.state.onUpload){
           file.progress = 0;
           file.complete = false;
           this.state.onUpload(file);
       }
       var authData = Auth.getAuthData();
-      var progress = this.state.progress.slice();
-      progress.push(0);
+      //var progress = this.state.progress.slice();
+      //progress.push(0);
       //console.log('progress', progress);
-      var total = this.state.total.slice();
-      total.push(file.size);
+      //var total = this.state.total.slice();
+      //total.push(file.size);
       this.fileId(file);
       this.uploadProgress[file.id] = file;
       //console.log('total', total);
-      this.setState({'progress': progress, 'total': total});
-      // console.log('state1', this.state, progress, total);
-      // console.log('index', index);
-      var ctx = this;
+      //this.setState({'progress': progress, 'total': total});
 
+      var ctx = this;
       $.ajax({
           url: ctx.state.swift_url + '/' + ctx.state.path + file.name +'?format=json',
           beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
@@ -94,27 +88,28 @@ class UploadZone extends Component {
           // Custom XMLHttpRequest
             xhr: function() {
                 var myXhr = $.ajaxSettings.xhr();
+                var file_to_upload = file;
                 if (myXhr.upload) {
                     // For handling the progress of the upload
                     myXhr.upload.addEventListener('progress', function(e) {
                         if (e.lengthComputable) {
                             // console.log('state2', ctx.state);
-                            var progress = ctx.state.progress.slice();
-                            progress[index] = e.loaded;
-                            ctx.setState({'progress': progress});
+                            //var progress = ctx.state.progress.slice();
+                            // progress[index] = e.loaded;
+                            // ctx.setState({'progress': progress});
                             console.log('progress', ctx.state, e.loaded, e.total);
-                            ctx.uploadProgress[file.id].progress = (e.loaded * 100 / e.total);
+                            ctx.uploadProgress[file_to_upload.id].progress = (e.loaded * 100 / e.total);
                         }
                     } , false);
                     myXhr.upload.addEventListener('load', function(e) {
                         console.log('upload completed');
-                        file.complete = true;
+                        file_to_upload.complete = true;
                     } , false);
                     myXhr.upload.addEventListener('error', function(e) {
                         console.log('error occured', e);
-                        delete ctx.uploadProgress[file.id];
+                        delete ctx.uploadProgress[file_to_upload.id];
                         if(ctx.state.onError){
-                            ctx.state.onError(file);
+                            ctx.state.onError(file_to_upload);
                         }
                     } , false);
                 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import num from 'pretty-bytes';
-import { Card } from 'material-ui/Card';
+// import { Card } from 'material-ui/Card';
 import CircularProgress from 'material-ui/CircularProgress';
 import DoneIcon from 'material-ui-icons/Done';
 
@@ -29,14 +29,14 @@ class UploadProgress extends Component {
             <li><h4 className="nav-item nav-link">Uploads</h4></li>
         {this.state.uploads.map((upload, index) => (
             <li className="nav-item nav-link" key={upload.name+'-'+upload.size}>
-                <span className="uploadItem">{upload.name}</span>
+                <span className="uploadItem">{upload.name} ({num(upload.size)})</span>
                 <CircularProgress
                   mode="determinate"
                   value={upload.progress}
                   size={20}
                   thickness={3}
                 />
-                { upload.progress == 100 && <DoneIcon/>}
+                { upload.progress === 100 && <DoneIcon/>}
             </li>
         ))}
         </ul>
