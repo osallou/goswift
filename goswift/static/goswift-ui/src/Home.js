@@ -3,6 +3,8 @@ import { Auth } from './Auth';
 import { Redirect } from 'react-router-dom'
 import $ from 'jquery';
 // import num from 'pretty-bytes';
+import UploadZone from './UploadZone';
+import UploadProgress from './UploadProgress';
 import { Container } from './Container';
 import ContainerFile from './ContainerFile';
 // import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
@@ -35,7 +37,8 @@ class Home extends Component {
             'notif_msg': '',
             'dialog': false,
             'dialog_msg': '',
-            'newFolder': ''
+            'newFolder': '',
+            'uploads': []
         }
         this.uploader = null;
         this.getContainers();
@@ -46,6 +49,9 @@ class Home extends Component {
         this.deleteFile = this.deleteFile.bind(this);
         this.gotoFolder = this.gotoFolder.bind(this);
         this.gotoFolderIndex = this.gotoFolderIndex.bind(this);
+        this.fileUpload = this.fileUpload.bind(this);
+        this.fileUploadProgress = this.fileUploadProgress.bind(this);
+        this.fileUploadOver = this.fileUploadOver.bind(this);
   }
   getContainers() {
       var ctx = this;
@@ -56,7 +62,7 @@ class Home extends Component {
           dataType: "json",
           success: function(res){
               //callback({'status': true});
-              console.log(res);
+              // console.log(res);
               console.log(res.containers);
               ctx.setState({'containers': res.containers});
           },
@@ -100,6 +106,13 @@ class Home extends Component {
           });
       //};
   }
+  listContainer(container){
+      var ctx = this;
+      Container.listContainerDirectory(this.state.swift_url, this.state.path.join(''), function(res){
+          console.log(res);
+          ctx.setState({'files': res});
+      });
+  }
   showContainer(index){
       // request will by the same time set quotas and enable cors
       this.setState({'container': this.state.containers[index]});
@@ -132,11 +145,7 @@ class Home extends Component {
       else {
           this.getContainers();
           this.setState({'notif': true, 'notif_msg': 'File deleted'});
-          var ctx = this;
-          Container.listContainerDirectory(this.state.swift_url, this.state.path.join(''), function(res){
-              console.log(res);
-              ctx.setState({'files': res});
-          });
+          this.listContainer(this.state.container.name);
       }
   }
   download(msg){
@@ -175,7 +184,7 @@ class Home extends Component {
       var ctx = this;
       return function() {
           if(ctx.state.swift_url === null) {
-              ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'})
+              ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'});
               return;
           }
           console.log('should create', ctx.state.path, ctx.state.newFolder);
@@ -198,6 +207,29 @@ class Home extends Component {
         dialog: false
       });
   };
+  componentDidUpdate(prevProps, prevState){
+      console.log('homeupdate', prevProps, prevState, this.state);
+  }
+  fileUpload(file){
+      console.log('file upload', file);
+      console.log('state', this.state);
+      var uploadFiles = this.state.uploads.slice();
+      uploadFiles.push(file);
+      console.log('uploads', uploadFiles);
+      this.setState({'uploads': uploadFiles});
+  }
+  fileUploadProgress(file){
+      var uploadFiles = this.state.uploads.slice();
+      this.setState({'uploads': uploadFiles});
+      console.log('file upload progress', file.name, file.progress, file.size);
+  }
+  fileUploadOver(file){
+      console.log('over uploads', this.state.uploads);
+      var uploadFiles = this.state.uploads.slice();
+      this.setState({'uploads': uploadFiles});
+      console.log('file upload over', file);
+      this.listContainer(this.state.container.name);
+  }
   render() {
       const actions = [
             <FlatButton
@@ -217,6 +249,7 @@ class Home extends Component {
                 <li onClick={this.showContainer.bind(this, index)} key={container.name} data-toggle="tooltip" data-placement="right"  title={container.last_modified} className="nav-item nav-link active">{container.name} <span className="badge badge-light">{container.count}</span></li>
             ))}
             </ul>
+            <UploadProgress files={this.state.uploads}/>
         </div>
         <div className="col-sm">
             <nav aria-label="breadcrumb">
@@ -229,7 +262,16 @@ class Home extends Component {
             </nav>
             <GridList cellHeight={120} cols={2}>
                 <GridTile key="1" col="1" title="Upload">
-                    <CloudUploadIcon/>
+                    {
+                        this.state.swift_url && <UploadZone
+                            swift_url={this.state.swift_url}
+                            path={this.state.path.join()}
+                            onUpload={this.fileUpload}
+                            onProgress={this.fileUploadProgress}
+                            onOver={this.fileUploadOver}
+                            />
+                    }
+                    {!this.state.swift_url && <p>Select a container for upload</p>}
                 </GridTile>
                 <GridTile key="2" col="1" title="Create folder">
                 <TextField

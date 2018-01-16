@@ -12,7 +12,6 @@ import ShareIcon from 'material-ui-icons/Share';
 class ContainerFile extends Component {
     constructor(props) {
           super(props);
-          //const auth = Auth.getAuthData();
           this.state = {
               'file': props.file,
               'swift_url': props.swift_url,
@@ -22,6 +21,11 @@ class ContainerFile extends Component {
           this.share = this.share.bind(this);
           console.log('new file',this.state.file);
       }
+    componentWillReceiveProps(nextProps){
+        if(nextProps.file !== undefined && nextProps.file.last_modified != this.state.file.last_modified){
+            this.setState({'file': nextProps.file});
+        }
+    }
   isDirectory(){
       if(this.state.directory){
           return true;
