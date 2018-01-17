@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 //import { Auth } from './Auth';
-import num from 'pretty-bytes';
+// import num from 'pretty-bytes';
+import { num } from './Utils';
+
 import { Container } from './Container';
 import IconButton from 'material-ui/IconButton';
 import { Card, CardHeader, CardActions } from 'material-ui/Card';

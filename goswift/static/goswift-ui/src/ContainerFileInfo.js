@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import num from 'pretty-bytes';
+//import num from 'pretty-bytes';
+import { num } from './Utils';
 import { Card, CardText, CardHeader } from 'material-ui/Card';
 import Dialog from 'material-ui/Dialog';
 import { Container } from './Container';

@@ -64,6 +64,8 @@ class Home extends Component {
         this.showContainerInfo = this.showContainerInfo.bind(this);
         this.closeContainerInfo = this.closeContainerInfo.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
+        this.handleNotifClose = this.handleNotifClose.bind(this);
+        this.handleDialogClose = this.handleDialogClose.bind(this);
   }
   getContainers() {
       var ctx = this;
@@ -251,12 +253,12 @@ class Home extends Component {
         ctx.setState({'newContainer': event.target.value});
       }
   }
-  handleNotifClose = () => {
+  handleNotifClose () {
       this.setState({
         notif: false,
       });
   };
-  handleDialogClose = () => {
+  handleDialogClose () {
       this.setState({
         dialog: false
       });

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import num from 'pretty-bytes';
+// import num from 'pretty-bytes';
+import { num } from './Utils';
 // import { Card } from 'material-ui/Card';
 import CircularProgress from 'material-ui/CircularProgress';
 import DeleteIcon from 'material-ui-icons/Delete';
