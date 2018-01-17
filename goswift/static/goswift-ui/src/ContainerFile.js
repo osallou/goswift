@@ -8,6 +8,8 @@ import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
 import FolderIcon from 'material-ui-icons/Folder';
 import DeleteIcon from 'material-ui-icons/Delete';
 import ShareIcon from 'material-ui-icons/Share';
+import InfoIcon from 'material-ui-icons/Info';
+import ContainerFileInfo from './ContainerFileInfo';
 
 class ContainerFile extends Component {
     constructor(props) {
@@ -16,7 +18,8 @@ class ContainerFile extends Component {
               'file': props.file,
               'swift_url': props.swift_url,
               'directory': props.file.content_type === 'application/directory',
-              'bucket': props.bucket
+              'bucket': props.bucket,
+              'showDetails': false
           }
           this.share = this.share.bind(this);
           console.log('new file',this.state.file);
@@ -32,6 +35,19 @@ class ContainerFile extends Component {
       }
       else {
           return false;
+      }
+  }
+  showInfo(){
+      var ctx = this;
+      return function(){
+          ctx.setState({showDetails: true});
+      }
+  }
+  closeInfo(){
+      var ctx = this;
+      return function(){
+          console.log('close info');
+          ctx.setState({showDetails: false});
       }
   }
   basename(){
@@ -115,7 +131,14 @@ class ContainerFile extends Component {
   render() {
     return (
         <Card>
-            {!this.isDirectory() && <CardHeader title={this.basename()} subtitle={this.secondaryInfo()}></CardHeader>}
+        {this.state.showDetails &&
+            <ContainerFileInfo
+            file={this.state.file}
+            onClose={this.closeInfo}
+            swift_url={this.state.swift_url}
+            dialog={this.state.showDetails}/>}
+
+            {!this.isDirectory() && <CardHeader title={this.basename()} subtitle={this.secondaryInfo()}><InfoIcon onClick={this.showInfo()}/></CardHeader>}
             {this.isDirectory() && <CardHeader title={this.basename()} onClick={this.gotoFolder()}><FolderIcon/></CardHeader>}
             <CardActions>
                 {!this.isDirectory() &&

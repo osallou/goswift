@@ -107,6 +107,7 @@ class UploadZone extends Component {
                     } , false);
                     myXhr.upload.addEventListener('error', function(e) {
                         console.log('error occured', e);
+                        file_to_upload.error = true;
                         delete ctx.uploadProgress[file_to_upload.id];
                         if(ctx.state.onError){
                             ctx.state.onError(file_to_upload);

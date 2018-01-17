@@ -246,7 +246,7 @@ class Home extends Component {
             <h4>Containers</h4>
             <ul className="nav nav-pills flex-column">
             {this.state.containers.map((container, index) => (
-                <li onClick={this.showContainer.bind(this, index)} key={container.name} data-toggle="tooltip" data-placement="right"  title={container.last_modified} className="nav-item nav-link active">{container.name} <span className="badge badge-light">{container.count}</span></li>
+                <li onClick={this.showContainer.bind(this, index)} key={container.name} data-toggle="tooltip" data-placement="right"  title={container.last_modified} ><FlatButton label={container.name}/></li>
             ))}
             </ul>
             <UploadProgress files={this.state.uploads}/>
@@ -254,7 +254,7 @@ class Home extends Component {
         <div className="col-sm">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>root</li>
+                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (
                   <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}

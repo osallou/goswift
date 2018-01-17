@@ -88,6 +88,33 @@ export class Container {
             }
         });
     }
+    static metaContainerFile(url, filepath, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: url + '/' + filepath,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "HEAD",
+            dataType: "json",
+            success: function(res, textStatus, request){
+                var result = [];
+                var headers = request.getAllResponseHeaders().split("\n");
+                for(var i=0;i<headers.length;i++){
+                    var header = headers[i].replace(/[\n\r]+/g, '');;
+                    console.log('header', header);
+                    if(header.startsWith('x-object-meta-')){
+                        var keyvalue = header.split(':')
+                        result.push({'name': keyvalue[0].replace('x-object-meta-', '').trim(), 'value': keyvalue[1].trim()});
+                    }
+                }
+                callback(result);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to get meta: ' + error);
+                callback(null);
+            }
+        });
+    }
     static createDirectory(url, basepath, filepath, callback){
         var authData = Auth.getAuthData();
         var dirpath = basepath.join('') + filepath.trim();
