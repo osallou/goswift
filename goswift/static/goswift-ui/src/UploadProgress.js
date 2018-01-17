@@ -12,14 +12,14 @@ class UploadProgress extends Component {
           this.state = {
               'uploads': props.files,
           }
-          console.log('UploadProgress', this.state);
+          // console.log('UploadProgress', this.state);
           this.clear = this.clear.bind(this)
       };
       componentDidUpdate(prevProps, prevState){
-          console.log('uploadprogressupdate', prevProps, 'oldstate',prevState, 'newstate', this.state);
+          // console.log('uploadprogressupdate', prevProps, 'oldstate',prevState, 'newstate', this.state);
       }
       componentWillReceiveProps(nextProps){
-        console.log('new props', nextProps);
+        // console.log('new props', nextProps);
         if(nextProps.files !== undefined && nextProps.files.length > 0){
             this.setState({uploads: nextProps.files.slice()});
         }
@@ -29,7 +29,7 @@ class UploadProgress extends Component {
       return function(){
           console.log('clear');
           var newuploads = [];
-          var olduploads = this.state.uploads.slice();
+         // var olduploads = this.state.uploads.slice();
           this.state.uploads.forEach(function(upload){
               if(!upload.complete){
                   newuploads.push(upload);

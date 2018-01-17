@@ -19,6 +19,24 @@ export class Container {
             }
         });
     }
+    static createContainer(bucket, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "POST",
+            dataType: "json",
+            success: function(res){
+                //callback({'status': true});
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to create container: ' + error);
+                callback({'error': error});
+            }
+        });
+    }
     static getContainerDetails(bucket, path, callback){
         var authData = Auth.getAuthData();
         $.ajax({
@@ -29,6 +47,34 @@ export class Container {
             success: function(res){
                 //callback({'status': true});
                 callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to get container details: ' + error);
+                callback(null);
+            }
+        });
+    }
+    static getContainerMeta(bucket, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "HEAD",
+            dataType: "json",
+            success: function(res, textStatus, request){
+                //callback({'status': true});
+                var result = [];
+                var headers = request.getAllResponseHeaders().split("\n");
+                for(var i=0;i<headers.length;i++){
+                    var header = headers[i].replace(/[\n\r]+/g, '');;
+                    // console.log('cont meta header', header);
+                    if(header.startsWith('x-container-')){
+                        var keyvalue = header.split(':')
+                        result.push({'name': keyvalue[0].replace('x-container-', '').trim(), 'value': keyvalue[1].trim()});
+                    }
+                }
+                callback(result);
             },
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
@@ -88,6 +134,23 @@ export class Container {
             }
         });
     }
+    static deleteContainer(url, containerName, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: url,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "DELETE",
+            dataType: "json",
+            success: function(res){
+                callback({'msg': 'container deleted'});
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                console.log('Failed to delete: ' + error);
+                callback({'error': error});
+            }
+        });
+    }
     static metaContainerFile(url, filepath, callback){
         var authData = Auth.getAuthData();
         $.ajax({
@@ -100,7 +163,7 @@ export class Container {
                 var headers = request.getAllResponseHeaders().split("\n");
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
-                    console.log('header', header);
+                    //console.log('header', header);
                     if(header.startsWith('x-object-meta-')){
                         var keyvalue = header.split(':')
                         result.push({'name': keyvalue[0].replace('x-object-meta-', '').trim(), 'value': keyvalue[1].trim()});

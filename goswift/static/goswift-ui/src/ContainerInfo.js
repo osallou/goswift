@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import num from 'pretty-bytes';
+// import num from 'pretty-bytes';
 import { Card, CardText, CardHeader } from 'material-ui/Card';
 import Dialog from 'material-ui/Dialog';
 import { Container } from './Container';
@@ -8,12 +8,11 @@ import TextField from 'material-ui/TextField';
 import { GridList, GridTile } from 'material-ui/GridList';
 
 
-class ContainerFileInfo extends Component {
+class ContainerInfo extends Component {
     constructor(props) {
           super(props);
           this.state = {
-              'swift_url': props.swift_url,
-              'file': props.file,
+              'container': props.container,
               'metas': [],
               'dialog': props.dialog || false,
               'onClose': props.onClose
@@ -24,21 +23,23 @@ class ContainerFileInfo extends Component {
       componentDidMount(){
           // get container object details
           var ctx = this;
-          Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
-              ctx.setState({'metas': res});
-          });
+          if(this.state.container){
+              Container.getContainerMeta(this.state.container, function(res){
+                  ctx.setState({'metas': res});
+              });
+          }
       };
 
       componentWillReceiveProps(nextProps){
-        console.log('new container file info props', nextProps);
         var ctx = this;
-        if(nextProps.file !== undefined){
-            Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
+        //console.log('new container info props', nextProps);
+        if(nextProps.file !== undefined && nextProps.file!=null){
+            Container.getContainerMeta(nextProps.file, function(res){
+                console.log('container metas', res)
                 ctx.setState({
-                    'file': nextProps.file,
+                    'container': nextProps.file,
                     'dialog': nextProps.dialog,
                     'metas': res,
-                    'swift_url': nextProps.swift_url
                 });
             });
         }
@@ -64,37 +65,22 @@ class ContainerFileInfo extends Component {
               keyboardFocused={true}
               onClick={this.handleDialogClose}
             />,
-            <FlatButton
-              label="Save"
-              primary={true}
-              keyboardFocused={true}
-              onClick={this.handleDialogSave}
-            />,
         ];
     if(!this.state.dialog) {
          return null;
     }
     return (
         <Dialog
-          title="File info"
+          title={this.state.container}
           modal={false}
           actions={actions}
           open={this.state.dialog}
           onRequestClose={this.handleDialogClose}
         >
             <Card className="container">
-                <CardHeader title={this.state.file.name} subtitle={this.state.file.last_modified}></CardHeader>
+                <CardHeader title="Information"></CardHeader>
                 <CardText>
                     <GridList>
-                        <GridTile key="totalsize">
-                            <div className="field-line">
-                                <TextField
-                                    floatingLabelText="Size"
-                                    name="size"
-                                    value={num(this.state.file.bytes)}
-                                    disabled={true}/>
-                            </div>
-                        </GridTile>
                         {this.state.metas.map((meta, index) =>(
                             <GridTile key={meta.name}>
                                 <div className="field-line">
@@ -114,4 +100,4 @@ class ContainerFileInfo extends Component {
   }
 }
 
-export default ContainerFileInfo;
+export default ContainerInfo;

@@ -23,6 +23,7 @@ class ContainerFile extends Component {
           }
           this.share = this.share.bind(this);
           console.log('new file',this.state.file);
+          this.closeInfo = this.closeInfo.bind(this);
       }
     componentWillReceiveProps(nextProps){
         if(nextProps.file !== undefined && nextProps.file.last_modified !== this.state.file.last_modified){
@@ -45,10 +46,11 @@ class ContainerFile extends Component {
   }
   closeInfo(){
       var ctx = this;
-      return function(){
-          console.log('close info');
+      console.log('?close?');
+      //return function(){
+          console.log('close file info');
           ctx.setState({showDetails: false});
-      }
+      //}
   }
   basename(){
       if(! this.state.file) { return ''}

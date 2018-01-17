@@ -18,7 +18,7 @@ from flask import request
 from flask import abort
 from flask import Response
 
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 
 from goswift import version
@@ -106,7 +106,7 @@ AVAILABLE_VERSIONS = {
 DEFAULT_VERSION = V1Controller.version_string
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, expose_headers=['X-Container-Bytes-Used', 'X-Container-Object-Count', 'X-Auth-Token'])
 
 def get_token(data):
     auth = {
@@ -243,9 +243,21 @@ def get_project_containers(apiversion, project):
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
     r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
-    if r.status_code != 200:
+    if r.status_code not in [200]:
         abort(r.status_code)
     return jsonify({'containers': r.json()})
+
+
+@app.route('/api/<apiversion>/project/<project>/<container>', methods=['POST'])
+@requires_auth
+def create_project_containers(apiversion, project, container):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    r = requests.put(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container +'?format=json', headers=headers)
+    if r.status_code not in [201, 202]:
+        abort(r.status_code)
+    return jsonify({'msg': 'container created'})
 
 
 @app.route('/api/<apiversion>/project/<project>/<container>/<path:filepath>', methods=['GET'])
@@ -281,6 +293,24 @@ def download_via_tempurl(apiversion, project, container, filepath):
     tmpurl = s.format(host=config['swift']['swift_url'], path=path, sig=sig, expires=expires)
     return jsonify({'url': tmpurl})
 
+
+
+@app.route('/api/<apiversion>/project/<project>/<container>', methods=['HEAD'])
+@requires_auth
+def get_project_container_meta(apiversion, project, container):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    # Get container info
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    res = []
+    resp = Response("")
+    for res_header in list(r.headers.keys()):
+        if res_header.startswith('X-Container-'):
+            resp.headers[res_header] = r.headers[res_header]
+    return resp
 
 @app.route('/api/<apiversion>/project/<project>/<container>', methods=['GET'])
 @requires_auth

@@ -27,6 +27,19 @@ class UploadZone extends Component {
           console.log("state", this.state);
 
       };
+      componentWillReceiveProps(nextProps){
+        console.log('new uploadzone file info props', nextProps);
+        var ctx = this;
+        if(nextProps.swift_url !== undefined && nextProps.swift_url !== null){
+            ctx.setState({
+                'path': nextProps.path,
+                'swift_url': nextProps.swift_url
+            });
+
+        }
+      }
+
+
       checkUploads(){
         // console.log('check for uploads', this.uploadProgress);
         var files = Object.keys(this.uploadProgress);
@@ -65,16 +78,13 @@ class UploadZone extends Component {
           file.complete = false;
           this.state.onUpload(file);
       }
+      file.url = this.state.swift_url;
+
       var authData = Auth.getAuthData();
-      //var progress = this.state.progress.slice();
-      //progress.push(0);
-      //console.log('progress', progress);
-      //var total = this.state.total.slice();
-      //total.push(file.size);
+
       this.fileId(file);
       this.uploadProgress[file.id] = file;
-      //console.log('total', total);
-      //this.setState({'progress': progress, 'total': total});
+
 
       var ctx = this;
       $.ajax({
@@ -93,11 +103,6 @@ class UploadZone extends Component {
                     // For handling the progress of the upload
                     myXhr.upload.addEventListener('progress', function(e) {
                         if (e.lengthComputable) {
-                            // console.log('state2', ctx.state);
-                            //var progress = ctx.state.progress.slice();
-                            // progress[index] = e.loaded;
-                            // ctx.setState({'progress': progress});
-                            console.log('progress', ctx.state, e.loaded, e.total);
                             ctx.uploadProgress[file_to_upload.id].progress = (e.loaded * 100 / e.total);
                         }
                     } , false);
@@ -120,7 +125,7 @@ class UploadZone extends Component {
 
   }
   onDrop(accepted, rejected){
-      console.log('swift: ',this.state.swift_url, 'path: ', this.state.path);
+      // console.log('swift: ',this.state.swift_url, 'path: ', this.state.path);
       if(this.state.swift_url === undefined || this.state.swift_url === null){
           console.log('no url defined yet for upload');
           if(this.state.onError){
@@ -128,7 +133,7 @@ class UploadZone extends Component {
           }
           return;
       }
-      console.log(accepted,rejected);
+      // console.log(accepted,rejected);
       for(var i=0;i<accepted.length;i++){
           console.log('upload ', accepted[i]);
           this.uploadFile(accepted[i], i);
