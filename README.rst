@@ -22,6 +22,7 @@ Web ui
 in goswift/static/goswift-ui is the Web UI part, using yarn for packages
 
 .. code-block:: bash
+
   cd goswift/static/goswift-ui/
   yarn install
   yarn build
@@ -29,8 +30,8 @@ in goswift/static/goswift-ui is the Web UI part, using yarn for packages
 To launch dev service
 
 .. code-block:: bash
-  yarn start
 
+  yarn start
 
 Backend
 -------
