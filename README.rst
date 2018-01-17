@@ -31,7 +31,6 @@ To launch dev service
 .. code-block:: bash
   yarn start
 
-
 Backend
 -------
 
