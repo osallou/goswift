@@ -11,7 +11,6 @@ import ContainerInfo from './ContainerInfo';
 // import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
 import FlatButton from 'material-ui/FlatButton';
 import InfoIcon from 'material-ui-icons/Info';
-import IconButton from 'material-ui/IconButton';
 import DeleteIcon from 'material-ui-icons/Delete';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';

@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import { Auth } from './Auth';
+import Config from './Config';
 
 export class Container {
     static listContainerDirectory(url, filepath, callback){
@@ -21,8 +22,9 @@ export class Container {
     }
     static createContainer(bucket, callback){
         var authData = Auth.getAuthData();
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
+            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "POST",
             dataType: "json",
@@ -39,8 +41,9 @@ export class Container {
     }
     static getContainerDetails(bucket, path, callback){
         var authData = Auth.getAuthData();
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
+            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
@@ -57,8 +60,9 @@ export class Container {
     }
     static getContainerMeta(bucket, callback){
         var authData = Auth.getAuthData();
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' + bucket,
+            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "HEAD",
             dataType: "json",
@@ -85,8 +89,9 @@ export class Container {
     }
     static downloadContainerFile(bucket, path, filepath, callback){
         var authData = Auth.getAuthData();
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' +bucket + '/' + filepath,
+            url: config.url + "/api/v1/project/" + authData.project + '/' +bucket + '/' + filepath,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
@@ -102,8 +107,9 @@ export class Container {
     }
     static getTmpUrlForUploadContainerFile(bucket, path, filepath, callback){
         var authData = Auth.getAuthData();
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/project/" + authData.project + '/' +bucket + '/' + filepath + '?method=PUT',
+            url: config.url + "/api/v1/project/" + authData.project + '/' +bucket + '/' + filepath + '?method=PUT',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",

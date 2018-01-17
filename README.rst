@@ -19,6 +19,14 @@ See config.yml.example
 Web ui
 ------
 
+Update config in src/Config.js:
+
+.. code-block:: javascript
+
+   {
+    'url': 'http://localhost:6543' # URL to backend, if served directly by backend set empty string ''
+   }
+
 in goswift/static/goswift-ui is the Web UI part, using yarn for packages
 
 .. code-block:: bash
