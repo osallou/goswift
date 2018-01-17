@@ -61,6 +61,7 @@ class Home extends Component {
         this.fileUpload = this.fileUpload.bind(this);
         this.fileUploadProgress = this.fileUploadProgress.bind(this);
         this.fileUploadOver = this.fileUploadOver.bind(this);
+        this.fileUploadError = this.fileUploadError.bind(this);
         this.showContainerInfo = this.showContainerInfo.bind(this);
         this.closeContainerInfo = this.closeContainerInfo.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
@@ -289,6 +290,13 @@ class Home extends Component {
       console.log('file upload over', file);
       this.listContainer(this.state.container.name);
   }
+  fileUploadError(file){
+      console.log('file upload error', file);
+      this.setState({
+              'notif': true,
+              'notif_msg': file.error,
+      });
+  }
   render() {
       const actions = [
             <FlatButton
@@ -344,7 +352,7 @@ class Home extends Component {
 
             </nav>
             <GridList cellHeight={120} cols={2}>
-                <GridTile key="1" col="1" title="Upload">
+                <GridTile key="1" col="1" title="Upload drop zone">
                     {
                         this.state.swift_url && <UploadZone
                             swift_url={this.state.swift_url}
@@ -352,6 +360,7 @@ class Home extends Component {
                             onUpload={this.fileUpload}
                             onProgress={this.fileUploadProgress}
                             onOver={this.fileUploadOver}
+                            onError={this.fileUploadError}
                             />
                     }
                     {!this.state.swift_url && <p>Select a container for upload</p>}

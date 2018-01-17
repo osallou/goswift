@@ -30,8 +30,8 @@ class UploadProgress extends Component {
           console.log('clear');
           var newuploads = [];
          // var olduploads = this.state.uploads.slice();
-          this.state.uploads.forEach(function(upload){
-              if(!upload.complete){
+          ctx.state.uploads.forEach(function(upload){
+              if(!upload.complete && !upload.error){
                   newuploads.push(upload);
               }
           });

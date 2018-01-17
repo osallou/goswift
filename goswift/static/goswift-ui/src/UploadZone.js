@@ -28,7 +28,7 @@ class UploadZone extends Component {
 
       };
       componentWillReceiveProps(nextProps){
-        console.log('new uploadzone file info props', nextProps);
+        // console.log('new uploadzone file info props', nextProps);
         var ctx = this;
         if(nextProps.swift_url !== undefined && nextProps.swift_url !== null){
             ctx.setState({
@@ -73,10 +73,20 @@ class UploadZone extends Component {
       return file.id;
   }
   uploadFile(file, index){
+
       if(this.state.onUpload){
           file.progress = 0;
           file.complete = false;
           this.state.onUpload(file);
+      }
+      if(file.type === '') {
+          file.error = 'Directory upload not supported';
+          //file.complete = true;
+          file.progress = 100;
+          if(this.state.onError){
+              this.state.onError(file);
+          }
+          return;
       }
       file.url = this.state.swift_url;
 
@@ -142,7 +152,7 @@ class UploadZone extends Component {
   render() {
     return (
         <Dropzone className="UploadZone" onDrop={this.onDrop}>
-            <CloudUploadIcon/>
+            lower than 5Gb <CloudUploadIcon/>
         </Dropzone>
     );
   }
