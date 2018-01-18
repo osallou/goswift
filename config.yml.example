@@ -9,14 +9,14 @@ tls:
   cert: null
   key: null
 
-  swift:
-      keystone_url: 'https://x.y.zg/v3'
-      swift_url: 'https://x.y.z' # without /v1
-      admin:
-          os_user_id: null
-          os_user_password: null
-          os_user_project: null
-          os_user_domain: null
-      defaults:
-          domain: 'Users'
-      quotas: '1G'
+swift:
+    keystone_url: null # 'https://x.y.zg/v3'
+    swift_url: null # 'https://x.y.z' without /v1
+    admin:
+        os_user_id: null
+        os_user_password: null
+        os_user_project: null
+        os_user_domain: null
+    defaults:
+        domain: 'Users'
+     quotas: '1G'
