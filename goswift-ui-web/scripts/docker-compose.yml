@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+    goswift-frontend:
+        image: osallou/goswift-frontend
+        ports:
+            - "8080:80"
+        environment:
+            - REACT_APP_GOSWIFT_BACKEND_URL=${REACT_APP_GOSWIFT_BACKEND_URL}
+        build:
+            context: .
+            dockerfile: Dockerfile-frontend
+
+    goswift-backend:
+        image: osallou/goswift-backend
+        build:
+            context: .
+            dockerfile: Dockerfile-backend
+        ports:
+            - "8000:8000"
+        environment:
+            - GOSWIFT_SALT_SECRET=${GOSWIFT_SALT_SECRET}
+            - GOSWIFT_SWIFT_KEYSTONE_URL=${GOSWIFT_SWIFT_KEYSTONE_URL}
+            - GOSWIFT_SWIFT_SWIFT_URL=${GOSWIFT_SWIFT_SWIFT_URL}
+            - GOSWIFT_SWIFT_ADMIN_OS_USER_ID=${GOSWIFT_SWIFT_ADMIN_OS_USER_ID}
+            - GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD=${GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD}
+            - GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT=${GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT}
+            - GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN=${GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN}
+            - GOSWIFT_SWIFT_DEFAULTS_DOMAIN=${GOSWIFT_SWIFT_DEFAULTS_DOMAIN}
+            - GOSWIFT_SWIFT_QUOTAS=${GOSWIFT_SWIFT_QUOTAS}

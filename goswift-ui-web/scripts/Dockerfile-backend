@@ -1,4 +1,4 @@
-FROM python3:3
+FROM python:3
 
 MAINTAINER Olivier Sallou <olivier.sallou@irisa.fr>
 
@@ -15,4 +15,3 @@ WORKDIR /root/goswift
 EXPOSE 8000
 
 CMD ["gunicorn", "-b", "0.0.0.0", "goswift.app:app"]
-

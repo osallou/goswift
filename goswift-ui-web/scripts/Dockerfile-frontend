@@ -11,4 +11,4 @@ RUN cd /root/goswift/goswift-ui-web && yarn install
 
 WORKDIR /root/goswift/goswift-ui-web
 ENV GOSWIFT_WEB_ROOT="/root/goswift/goswift-ui-web"
-ENTRYPOINT ['/root/goswift/goswift-ui-web/scripts/startweb.sh']
+ENTRYPOINT ["/root/goswift/goswift-ui-web/scripts/startweb.sh"]
