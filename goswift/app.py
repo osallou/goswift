@@ -272,7 +272,8 @@ def get_project_containers(apiversion, project):
     r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
     if r.status_code not in [200]:
         abort(r.status_code)
-    return jsonify({'containers': r.json()})
+    url = config['swift']['swift_url'] + '/v1/AUTH_' + str(project)
+    return jsonify({'containers': r.json(), 'swift_url': url})
 
 
 @app.route('/api/<apiversion>/project/<project>/<container>', methods=['POST'])
