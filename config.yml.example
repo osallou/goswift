@@ -2,6 +2,8 @@ debug: true
 
 salt_secret: 'xyz' # unique secret used to hash projects to generate tmpurls
 
+host_href: null
+
 listen:
   ip: '0.0.0.0'
   port: 6543
