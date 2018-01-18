@@ -32,28 +32,28 @@ with open(config_file, 'r') as ymlfile:
     config = yaml.load(ymlfile)
 
 def override_config():
-    if 'GOSWIFT_DEBUG' in os.environ:
+    if 'GOSWIFT_DEBUG' in os.environ and os.environ['GOSWIFT_DEBUG']:
         config['debug'] = os.environ['GOSWIFT_DEBUG']
-    if 'GOSWIFT_SALT_SECRET' in os.environ:
+    if 'GOSWIFT_SALT_SECRET' in os.environ and os.environ['GOSWIFT_SALT_SECRET']:
         config['salt_secret'] = os.environ['GOSWIFT_SALT_SECRET']
-    if 'GOSWIFT_SWIFT_KEYSTONE_URL' in os.environ:
+    if 'GOSWIFT_SWIFT_KEYSTONE_URL' in os.environ and os.environ['GOSWIFT_SWIFT_KEYSTONE_URL']:
         config['swift']['keystone_url'] = os.environ['GOSWIFT_SWIFT_KEYSTONE_URL']
-    if 'GOSWIFT_SWIFT_SWIFT_URL' in os.environ:
+    if 'GOSWIFT_SWIFT_SWIFT_URL' in os.environ and os.environ['GOSWIFT_SWIFT_SWIFT_URL']:
         config['swift']['swift_url'] = os.environ['GOSWIFT_SWIFT_SWIFT_URL']
 
-    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_ID' in os.environ:
+    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_ID' in os.environ and os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_ID']:
         config['swift']['admin']['os_user_id'] = os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_ID']
-    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD' in os.environ:
+    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD' in os.environ and os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD']:
         config['swift']['admin']['os_user_password'] = os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_PASSWORD']
-    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT' in os.environ:
+    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT' in os.environ and os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT']:
         config['swift']['admin']['os_user_project'] = os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_PROJECT']
-    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN' in os.environ:
+    if 'GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN' in os.environ and os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN']:
         config['swift']['admin']['os_user_domain'] = os.environ['GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN']
 
-    if 'GOSWIFT_SWIFT_DEFAULTS_DOMAIN' in os.environ:
+    if 'GOSWIFT_SWIFT_DEFAULTS_DOMAIN' in os.environ and os.environ['GOSWIFT_SWIFT_DEFAULTS_DOMAIN']:
         config['swift']['defaults']['domain'] = os.environ['GOSWIFT_SWIFT_DEFAULTS_DOMAIN']
 
-    if 'GOSWIFT_SWIFT_QUOTAS' in os.environ:
+    if 'GOSWIFT_SWIFT_QUOTAS' in os.environ and os.environ['GOSWIFT_SWIFT_QUOTAS']:
         config['swift']['quotas'] = os.environ['GOSWIFT_SWIFT_QUOTAS']
 
 override_config()
