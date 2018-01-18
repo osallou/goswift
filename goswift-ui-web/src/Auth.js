@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import Config from './Config';
 
 export class Auth {
     static setQuotas(){
@@ -9,8 +10,9 @@ export class Auth {
         localStorage.removeItem('goswift-project');
     }
     static login(logdata, callback){
+        var config = Config.getConfig();
         $.ajax({
-            url: "http://localhost:6543/api/v1/auth",
+            url: config.url + "/api/v1/auth",
             type: "POST",
             data:  JSON.stringify(logdata),
             contentType: "application/json",

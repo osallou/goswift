@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { Auth } from './Auth';
 import { Redirect } from 'react-router-dom'
-import $ from 'jquery';
-// import num from 'pretty-bytes';
 import UploadZone from './UploadZone';
 import UploadProgress from './UploadProgress';
 import { Container } from './Container';
@@ -69,24 +67,25 @@ class Home extends Component {
   }
   getContainers() {
       var ctx = this;
-      $.ajax({
-          url: "http://localhost:6543/api/v1/project/" + ctx.state.project,
-          beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', ctx.state.token);},
-          type: "GET",
-          dataType: "json",
-          success: function(res){
-              console.log(res.containers);
-              ctx.setState({'containers': res.containers});
-          },
-          error: function(jqXHR, textStatus, error){
-              //callback({'status': false, 'msg': error});
-              if(jqXHR.status === 401){
+      Container.listContainers(function(msg){
+          if(msg.error){
+              if(msg.status === 401){
                   Auth.logout();
                   ctx.setState({'fireRedirect': true});
               }
-              console.log('Failed to get containers ' + error);
+              else {
+                  ctx.setState({
+                          'notif': true,
+                          'notif_msg': msg.error,
+                  });
+              }
+              return;
           }
+          console.log(msg.containers);
+          ctx.setState({'containers': msg.containers});
+
       });
+
   }
   deleteContainer(containerName){
       var ctx = this;

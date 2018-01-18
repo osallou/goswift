@@ -1,6 +1,5 @@
 {
   "name": "goswift-ui",
-  "homepage": "https://genostack-data.genouest.org/static/goswift-ui",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

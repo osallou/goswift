@@ -19,20 +19,14 @@ See config.yml.example
 Web ui
 ------
 
-Update config in src/Config.js:
-
-.. code-block:: javascript
-
-   {
-    'url': 'http://localhost:6543' # URL to backend, if served directly by backend set empty string ''
-   }
-
-in goswift/static/goswift-ui is the Web UI part, using yarn for packages
+in goswift-ui-web is the Web UI part, using yarn for packages
 
 .. code-block:: bash
 
   cd goswift/static/goswift-ui/
   yarn install
+  # URL to backend server
+  export REACT_APP_GOSWIFT_BACKEND_URL="http://localhost:6543" # or whatever url
   yarn build
 
 To launch dev service
@@ -41,10 +35,16 @@ To launch dev service
 
   yarn start
 
+ In production simply server build directory in your web server
+
+
 Backend
 -------
 
 .. code-block:: bash
 
   pip install -r requirements.txt
+  # For dev
   python3 goswift/app.py
+  # For prod
+  gunicorn goswift.app:app

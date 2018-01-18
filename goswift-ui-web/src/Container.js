@@ -15,8 +15,26 @@ export class Container {
             },
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
-                console.log('Failed to delete: ' + error);
-                callback(null);
+                console.log('Failed to list: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
+            }
+        });
+    }
+    static listContainers(callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/project/" + authData.project,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            dataType: "json",
+            success: function(res){
+                callback({'containers': res.containers});
+            },
+            error: function(jqXHR, textStatus, error){
+                //callback({'status': false, 'msg': error});
+                callback({'error': error, 'status': jqXHR.status})
+                console.log('Failed to get containers ' + error);
             }
         });
     }
@@ -35,7 +53,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to create container: ' + error);
-                callback({'error': error});
+                callback({'error': error, 'status': jqXHR.status});
             }
         });
     }
@@ -54,7 +72,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to get container details: ' + error);
-                callback(null);
+                callback({'error': error, 'status': jqXHR.status});
             }
         });
     }
@@ -82,8 +100,8 @@ export class Container {
             },
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
-                console.log('Failed to get container details: ' + error);
-                callback(null);
+                console.log('Failed to get container meta: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
             }
         });
     }
@@ -101,7 +119,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to get tempurl: ' + error);
-                callback(null);
+                callback('error': error, 'status': jqXHR.status);
             }
         });
     }
@@ -119,7 +137,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to get tempurl for upload: ' + error);
-                callback(null);
+                callback('error': error, 'status': jqXHR.status);
             }
         });
     }
@@ -136,7 +154,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to delete: ' + error);
-                callback(null);
+                callback('error': error, 'status': jqXHR.status);
             }
         });
     }
@@ -153,7 +171,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to delete: ' + error);
-                callback({'error': error});
+                callback({'error': error, 'status': jqXHR.status});
             }
         });
     }
@@ -179,8 +197,8 @@ export class Container {
             },
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
-                console.log('Failed to get meta: ' + error);
-                callback(null);
+                console.log('Failed to get file meta: ' + error);
+                callback('error': error, 'status': jqXHR.status);
             }
         });
     }
@@ -203,7 +221,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 //callback({'status': false, 'msg': error});
                 console.log('Failed to add directory: ' + error);
-                callback(null);
+                callback('error': error, 'status': jqXHR.status);
             }
         });
     }
