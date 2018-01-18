@@ -47,4 +47,4 @@ Backend
   # For dev
   python3 goswift/app.py
   # For prod
-  gunicorn goswift.app:app
+  gunicorn -b 0.0.0.0 goswift.app:app
