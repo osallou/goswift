@@ -19,4 +19,4 @@ swift:
         os_user_domain: null
     defaults:
         domain: 'Users'
-     quotas: '1G'
+    quotas: '1G'
