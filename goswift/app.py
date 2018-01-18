@@ -68,10 +68,13 @@ MEDIA_TYPE_JSON = 'application/vnd.openstack.key-manager-%s+json'
 def _get_base_url_from_request():
     if not config['host_href'] and hasattr(request, 'url'):
         p_url = urllib.parse.urlsplit(request.url)
+        base_url = '%s://%s' % (p_url.scheme, p_url.netloc)
+        '''
         if p_url.path:
             base_url = '%s://%s%s' % (p_url.scheme, p_url.netloc, p_url.path)
         else:
             base_url = '%s://%s' % (p_url.scheme, p_url.netloc)
+        '''
         return base_url
     else:
         return config['host_href']
@@ -79,7 +82,7 @@ def _get_base_url_from_request():
 def _get_versioned_url(version):
     if version[-1] != '/':
         version += '/'
-    # If host_href is not set in osvmexpire conf,
+    # If host_href is not set in conf,
     # then derive it from request url
     host_part = _get_base_url_from_request()
     if host_part[-1] != '/':
@@ -102,7 +105,7 @@ class BaseVersionController(object):
                 }, {
                     'rel': 'describedby',
                     'type': 'text/html',
-                    'href': 'https://github.com/genouest/goswift'
+                    'href': 'https://github.com/osallou/goswift'
                 }
             ],
             'media-types': [
