@@ -45,6 +45,8 @@ class Home extends Component {
             'containerInfoName': null
         }
         this.uploader = null;
+        this.expired = this.expired.bind(this);
+        Container.onExpiration(this.expired);
         this.getContainers();
         this.changeFolder = this.changeFolder.bind(this);
         this.createFolder = this.createFolder.bind(this);
@@ -64,6 +66,12 @@ class Home extends Component {
         this.deleteContainer = this.deleteContainer.bind(this);
         this.handleNotifClose = this.handleNotifClose.bind(this);
         this.handleDialogClose = this.handleDialogClose.bind(this);
+
+  }
+  expired(){
+      console.log('session expired, logout and redirect to login');
+      Auth.logout();
+      this.setState({'fireRedirect': true});
   }
   getContainers() {
       var ctx = this;

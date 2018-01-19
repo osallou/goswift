@@ -48,11 +48,7 @@ class ContainerFile extends Component {
   }
   closeInfo(){
       var ctx = this;
-      console.log('?close?');
-      //return function(){
-          console.log('close file info');
-          ctx.setState({showDetails: false});
-      //}
+      ctx.setState({showDetails: false});
   }
   basename(){
       if(! this.state.file) { return ''}

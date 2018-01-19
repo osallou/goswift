@@ -89,6 +89,7 @@ class ContainerInfo extends Component {
                                         name={meta.name}
                                         value={meta.value}
                                         disabled={true}/>
+
                                 </div>
                             </GridTile>
                         ))}

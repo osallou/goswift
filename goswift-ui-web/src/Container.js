@@ -2,7 +2,28 @@ import $ from 'jquery';
 import { Auth } from './Auth';
 import Config from './Config';
 
+let _expirationCallback = null;
+
 export class Container {
+
+    static get expirationCallback() { return _expirationCallback; }
+    static set expirationCallback(value) { _expirationCallback = value; }
+
+    static onExpiration(callback){
+        Container.expirationCallback = callback;
+    }
+    static hasExpired(status){
+        if(status === 401){
+            console.log("status 401, session expired");
+            if(Container.expirationCallback){
+                Container.expirationCallback();
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     static listContainerDirectory(url, filepath, callback){
         var authData = Auth.getAuthData();
         $.ajax({
@@ -14,7 +35,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to list: ' + error);
                 callback({'error': error, 'status': jqXHR.status});
             }
@@ -32,7 +53,8 @@ export class Container {
                 callback({'containers': res.containers});
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
+
                 callback({'error': error, 'status': jqXHR.status})
                 console.log('Failed to get containers ' + error);
             }
@@ -51,7 +73,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to create container: ' + error);
                 callback({'error': error, 'status': jqXHR.status});
             }
@@ -70,7 +92,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to get container details: ' + error);
                 callback({'error': error, 'status': jqXHR.status});
             }
@@ -99,7 +121,7 @@ export class Container {
                 callback(result);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to get container meta: ' + error);
                 callback({'error': error, 'status': jqXHR.status});
             }
@@ -117,7 +139,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to get tempurl: ' + error);
                 callback('error': error, 'status': jqXHR.status);
             }
@@ -135,7 +157,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to get tempurl for upload: ' + error);
                 callback('error': error, 'status': jqXHR.status);
             }
@@ -152,7 +174,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to delete: ' + error);
                 callback('error': error, 'status': jqXHR.status);
             }
@@ -169,7 +191,7 @@ export class Container {
                 callback({'msg': 'container deleted'});
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to delete: ' + error);
                 callback({'error': error, 'status': jqXHR.status});
             }
@@ -196,7 +218,7 @@ export class Container {
                 callback(result);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to get file meta: ' + error);
                 callback('error': error, 'status': jqXHR.status);
             }
@@ -219,7 +241,7 @@ export class Container {
                 callback(res);
             },
             error: function(jqXHR, textStatus, error){
-                //callback({'status': false, 'msg': error});
+                if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to add directory: ' + error);
                 callback('error': error, 'status': jqXHR.status);
             }

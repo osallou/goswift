@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 //import num from 'pretty-bytes';
 import { num } from './Utils';
-import { Card, CardText, CardHeader } from 'material-ui/Card';
+import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
 import Dialog from 'material-ui/Dialog';
+import Divider from 'material-ui/Divider';
 import { Container } from './Container';
 import FlatButton from 'material-ui/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import { GridList, GridTile } from 'material-ui/GridList';
-
+import AddIcon from 'material-ui-icons/Add';
 
 class ContainerFileInfo extends Component {
     constructor(props) {
@@ -17,10 +19,13 @@ class ContainerFileInfo extends Component {
               'file': props.file,
               'metas': [],
               'dialog': props.dialog || false,
-              'onClose': props.onClose
+              'onClose': props.onClose,
+              'newMetaName': ''
           }
           this.handleDialogClose = this.handleDialogClose.bind(this);
           this.handleDialogSave = this.handleDialogSave.bind(this);
+          this.addMeta = this.addMeta.bind(this);
+          this.changeNewMetaName = this.changeNewMetaName.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -52,10 +57,31 @@ class ContainerFileInfo extends Component {
       }
   }
   handleDialogSave(){
+      console.log('should update meta info');
       this.setState({'dialog': false});
       if(this.state.onClose){
           this.state.onClose(this.state.file, this.state.meta);
       }
+  }
+  addMeta(){
+      var ctx = this;
+      return function(){
+          if(! ctx.state.newMetaName) {return;}
+          var newMetas = ctx.state.metas.slice();
+          for(var i=0;i<newMetas.length;i++){
+              if(newMetas[i].name === ctx.state.newMetaName){
+                  return;
+              }
+          }
+          newMetas.push({'name': ctx.state.newMetaName, 'value': ctx.state.newMetaValue})
+          ctx.setState({'metas': newMetas})
+      }
+  }
+  changeNewMetaName(event){
+          var ctx = this;
+          return function(event){
+            ctx.setState({'newMetaName': event.target.value});
+          }
   }
   render() {
       const actions = [
@@ -75,41 +101,60 @@ class ContainerFileInfo extends Component {
     if(!this.state.dialog) {
          return null;
     }
+    const styles = {
+        tile: {
+            overflowY: 'auto'
+        },
+    }
+
     return (
         <Dialog
-          title="File info"
+          title={this.state.file.name}
           modal={false}
           actions={actions}
           open={this.state.dialog}
           onRequestClose={this.handleDialogClose}
+          autoScrollBodyContent={true}
         >
-            <Card className="container">
-                <CardHeader title={this.state.file.name} subtitle={this.state.file.last_modified}></CardHeader>
-                <CardText>
-                    <GridList>
-                        <GridTile key="totalsize">
-                            <div className="field-line">
-                                <TextField
-                                    floatingLabelText="Size"
-                                    name="size"
-                                    value={num(this.state.file.bytes)}
-                                    disabled={true}/>
-                            </div>
-                        </GridTile>
-                        {this.state.metas.map((meta, index) =>(
-                            <GridTile key={meta.name}>
-                                <div className="field-line">
-                                    <TextField
-                                        floatingLabelText={meta.name}
-                                        name={meta.name}
-                                        value={meta.value}
-                                        disabled={true}/>
-                                </div>
-                            </GridTile>
-                        ))}
-                    </GridList>
-               </CardText>
-            </Card>
+            <div className="row">
+                <div className="col-sm-6">
+                    <div className="field-line" >
+                        <TextField
+                            floatingLabelText="Last modified"
+                            name="last_modified"
+                            value={this.state.file.last_modified}
+                            disabled={true}/>
+                    </div>
+                    <div className="field-line" >
+                        <TextField
+                            floatingLabelText="Size"
+                            name="size"
+                            value={num(this.state.file.bytes)}
+                            disabled={true}/>
+                    </div>
+                    <div className="field-line">
+                        <TextField
+                            floatingLabelText="new metadata name"
+                            name="meta_name"
+                            value={this.state.newMetaName}
+                            onChange={this.changeNewMetaName()}
+                            disabled={false}/>
+                        <RaisedButton secondary={true} label="Add meta property" onClick={this.addMeta()} />
+                    </div>
+                </div>
+                <div className="col-sm-6">
+                {this.state.metas.map((meta, index) =>(
+                        <div key={meta.name} className="field-line">
+                            <TextField
+                                floatingLabelText={meta.name}
+                                name={meta.name}
+                                value={meta.value}
+                                disabled={false}/>
+                        </div>
+                ))}
+                </div>
+            </div>
+
         </Dialog>
     );
   }
