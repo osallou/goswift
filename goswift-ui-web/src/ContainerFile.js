@@ -66,7 +66,8 @@ class ContainerFile extends Component {
   }
   secondaryInfo(){
       if (! this.state.file) { return ''}
-      return this.state.file.last_modified + ', size:' + num(this.state.file.bytes);
+      console.log('bytes',this.state.file);
+      return this.state.file.last_modified + ', size:' + num(this.state.file.bytes );
   }
   download(){
       var ctx = this;

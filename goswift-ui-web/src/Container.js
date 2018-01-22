@@ -53,7 +53,13 @@ export class Container {
             cache: false,
             dataType: "json",
             success: function(res){
-                callback({'containers': res.containers});
+                var containers = [];
+                for(var i=0;i<res.containers.length;i++){
+                    if(! res.containers[i].name.endsWith('_segments')){
+                        containers.push(res.containers[i]);
+                    }
+                }
+                callback({'containers': containers});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
@@ -223,13 +229,20 @@ export class Container {
                 var headers = request.getAllResponseHeaders().split("\n");
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
-                    //console.log('header', header);
+                    console.log('header', header);
+                    if(header.startsWith('x-object-manifest')) {
+                        var keyvalue = header.split(':')
+                        result.push({'name': 'X-Object-Manifest', 'value': keyvalue[1].trim()})
+                    }
                     if(header.startsWith('x-object-meta-')){
                         var keyvalue = header.split(':')
                         result.push({'name': keyvalue[0].replace('x-object-meta-', '').trim(), 'value': keyvalue[1].trim()});
                     }
                 }
-                callback(result);
+                var about = {
+                    'content_length': request.getResponseHeader('Content-Length')
+                }
+                callback({'meta': result, 'about': about});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
@@ -270,7 +283,10 @@ export class Container {
                     xhr.setRequestHeader('X-Auth-Token', authData.token);
                     for(var i=0;i<metadata.length;i++){
                         var meta = metadata[i];
-                        if(meta.value !== ""){
+                        if(meta.name == 'X-Object-Manifest'){
+                            xhr.setRequestHeader('X-Object-Manifest', meta.value);
+                        }
+                        else if(meta.value !== ""){
                             xhr.setRequestHeader('X-Object-Meta-' + meta.name, meta.value);
                         }
                     }

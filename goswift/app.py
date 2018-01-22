@@ -351,6 +351,7 @@ def create_project_containers(apiversion, project, container):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
         'X-Container-Meta-Access-Control-Allow-Origin': '*',
+        'X-Container-Meta-Access-Control-Expose-Headers': 'Content-Length,X-Object-Manifest'
     }
     r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
     if r.status_code != 204:
@@ -441,11 +442,13 @@ def get_project_container(apiversion, project, container):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
         'X-Container-Meta-Access-Control-Allow-Origin': '*',
+        'X-Container-Meta-Access-Control-Expose-Headers': 'Content-Length,X-Object-Manifest'
     }
     r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
     '''
+
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }

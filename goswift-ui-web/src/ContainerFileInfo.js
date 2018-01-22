@@ -33,7 +33,11 @@ class ContainerFileInfo extends Component {
           // get container object details
           var ctx = this;
           Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
-              ctx.setState({'metas': res});
+              console.log(res);
+              if(res.about.content_length){
+                  ctx.state.file.bytes = res.about.content_length;
+              }
+              ctx.setState({'metas': res.meta});
           });
       };
 
@@ -42,10 +46,14 @@ class ContainerFileInfo extends Component {
         var ctx = this;
         if(nextProps.file !== undefined){
             Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
+                console.log(res);
+                if(res.about.content_length){
+                    nextProps.file.bytes = res.about.content_length;
+                }
                 ctx.setState({
                     'file': nextProps.file,
                     'dialog': nextProps.dialog,
-                    'metas': res,
+                    'metas': res.meta,
                     'swift_url': nextProps.swift_url
                 });
             });
@@ -170,7 +178,7 @@ class ContainerFileInfo extends Component {
                                 name={meta.name}
                                 value={meta.value}
                                 onChange={this.onMetaChange}
-                                disabled={false}/>
+                                disabled={meta.name=='X-Object-Manifest'}/>
                         </div>
                 ))}
                 </div>
