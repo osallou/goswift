@@ -21,6 +21,7 @@ export class Auth {
             type: "GET",
             contentType: "application/json",
             dataType: "json",
+            cache: false,
             success: function(res, textStatus, request){
                 localStorage.setItem('goswift-token', res.token);
                 localStorage.setItem('goswift-project', res.project);
