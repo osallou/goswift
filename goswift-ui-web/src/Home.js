@@ -16,6 +16,14 @@ import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
+import {
+  Table,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableHeaderColumn,
+} from 'material-ui/Table';
+import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
 
 import { GridList, GridTile } from 'material-ui/GridList';
 import Snackbar from 'material-ui/Snackbar';
@@ -385,8 +393,10 @@ class Home extends Component {
             </ul>
             <UploadProgress files={this.state.uploads}/>
         </div>
+
         <div className="col-sm">
             { this.state.container &&
+
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
@@ -401,6 +411,7 @@ class Home extends Component {
               </ol>
 
             </nav>
+
             }
             { this.state.container &&
             <GridList cellHeight={120} cols={2}>
@@ -416,9 +427,9 @@ class Home extends Component {
 
 
                 </GridTile>
-                <GridTile key="2" col="1" title="Create folder">
+                <GridTile key="2" col="1" >
                 <TextField
-                    floatingLabelText="folder name"
+                    floatingLabelText="Create folder"
                     name="newFolder"
                     onChange={this.changeFolder()}
                     value={this.state.newFolder}/>
@@ -442,10 +453,17 @@ class Home extends Component {
             >
               {this.state.dialog_msg}
             </Dialog>
-            <GridList>
+            <Table >
+            <TableHeader>
+            <TableRow>
+            <TableHeaderColumn>Name</TableHeaderColumn>
+            <TableHeaderColumn>Info</TableHeaderColumn>
+            <TableHeaderColumn>Actions</TableHeaderColumn>
+            </TableRow>
+            </TableHeader>
+            <TableBody>
             {this.state.dirs.map((containerFile, index) =>(
-                <GridTile key={containerFile.name}>
-                <ContainerFile
+                <ContainerFile key={containerFile.name}
                     swift_url={this.state.swift_url}
                     file={containerFile}
                     bucket={this.state.container.name}
@@ -454,12 +472,9 @@ class Home extends Component {
                     onDelete={this.deleteFile}
                     onClick={this.gotoFolder}
                 />
-                </GridTile>
-
             ))}
             {this.state.files.map((containerFile, index) =>(
-                <GridTile key={containerFile.name}>
-                <ContainerFile
+                <ContainerFile key={containerFile.name}
                     swift_url={this.state.swift_url}
                     file={containerFile}
                     bucket={this.state.container.name}
@@ -468,11 +483,9 @@ class Home extends Component {
                     onDelete={this.deleteFile}
                     onClick={this.gotoFolder}
                 />
-
-                </GridTile>
-
             ))}
-            </GridList>
+            </TableBody>
+            </Table>
         </div>
       </div>
     );

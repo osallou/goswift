@@ -135,32 +135,39 @@ class ContainerFile extends Component {
   }
   render() {
     return (
-        <Card>
+        <TableRow>
+        <TableRowColumn>
         {this.state.showDetails &&
             <ContainerFileInfo
             file={this.state.file}
             onClose={this.closeInfo}
             swift_url={this.state.swift_url}
-            dialog={this.state.showDetails}/>}
-
-            {!this.isDirectory() && <CardHeader title={this.basename()} subtitle={this.secondaryInfo()}><InfoIcon onClick={this.showInfo()}/></CardHeader>}
-            {this.isDirectory() && <CardHeader title={this.basename()} onClick={this.gotoFolder()}><FolderIcon/></CardHeader>}
-            <CardActions>
-                {!this.isDirectory() &&
-                <IconButton aria-label="Delete" onClick={this.deleteFile()}>
-                  <DeleteIcon />
+            dialog={this.state.showDetails}/>
+        }
+            {!this.isDirectory() && <p>{this.basename()}</p>}
+            {this.isDirectory() && <p onClick={this.gotoFolder()}><FolderIcon/> {this.basename()}</p>}
+        </TableRowColumn>
+        <TableRowColumn>
+            {!this.isDirectory() && <p>{this.secondaryInfo()}</p>}
+        </TableRowColumn>
+        <TableRowColumn>
+        {!this.isDirectory() && <InfoIcon onClick={this.showInfo()}/>}
+        {!this.isDirectory() &&
+        <IconButton aria-label="Delete" onClick={this.deleteFile()}>
+          <DeleteIcon />
+        </IconButton>
+        }
+        {!this.isDirectory() &&  <IconButton aria-label="Share" onClick={this.share()}>
+                  <ShareIcon />
                 </IconButton>
-                }
-                {!this.isDirectory() &&  <IconButton aria-label="Share" onClick={this.share()}>
-                          <ShareIcon />
-                        </IconButton>
-                }
-                {!this.isDirectory() &&  <IconButton aria-label="Download" onClick={this.download()}>
-                          <CloudDownloadIcon />
-                        </IconButton>
-                }
-            </CardActions>
-        </Card>
+        }
+        {!this.isDirectory() &&  <IconButton aria-label="Download" onClick={this.download()}>
+                  <CloudDownloadIcon />
+                </IconButton>
+        }
+        </TableRowColumn>
+        </TableRow>
+
     );
   }
 }
