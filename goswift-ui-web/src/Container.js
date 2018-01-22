@@ -247,5 +247,30 @@ export class Container {
             }
         });
     }
-
+    static updateMetadataContainerFile(url, filepath, metadata, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: url + '/' + filepath,
+            beforeSend: function(xhr){
+                    xhr.setRequestHeader('X-Auth-Token', authData.token);
+                    for(var i=0;i<metadata.length;i++){
+                        var meta = metadata[i];
+                        if(meta.value !== ""){
+                            xhr.setRequestHeader('X-Object-Meta-' + meta.name, meta.value);
+                        }
+                    }
+            },
+            type: "POST",
+            dataType: "json",
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to update metadata: ' + error);
+                callback('error': error, 'status': jqXHR.status);
+            }
+        });
+    }
 }

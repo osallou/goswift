@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 //import num from 'pretty-bytes';
 import { num } from './Utils';
-import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
+// import { Card, CardText, CardHeader, CardActions } from 'material-ui/Card';
 import Dialog from 'material-ui/Dialog';
-import Divider from 'material-ui/Divider';
+// import Divider from 'material-ui/Divider';
 import { Container } from './Container';
 import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import { GridList, GridTile } from 'material-ui/GridList';
-import AddIcon from 'material-ui-icons/Add';
+// import { GridList, GridTile } from 'material-ui/GridList';
+// import AddIcon from 'material-ui-icons/Add';
 
 class ContainerFileInfo extends Component {
     constructor(props) {
@@ -20,12 +20,14 @@ class ContainerFileInfo extends Component {
               'metas': [],
               'dialog': props.dialog || false,
               'onClose': props.onClose,
-              'newMetaName': ''
+              'newMetaName': '',
+              'error': ''
           }
           this.handleDialogClose = this.handleDialogClose.bind(this);
           this.handleDialogSave = this.handleDialogSave.bind(this);
           this.addMeta = this.addMeta.bind(this);
           this.changeNewMetaName = this.changeNewMetaName.bind(this);
+          this.onMetaChange = this.onMetaChange.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -58,10 +60,19 @@ class ContainerFileInfo extends Component {
   }
   handleDialogSave(){
       console.log('should update meta info');
-      this.setState({'dialog': false});
-      if(this.state.onClose){
-          this.state.onClose(this.state.file, this.state.meta);
-      }
+      var ctx = this;
+      Container.updateMetadataContainerFile(this.state.swift_url, this.state.file.name, this.state.metas, function(msg){
+          if(msg.error){
+              ctx.setState({'error': msg.error});
+          }
+          else {
+              ctx.setState({'error': '', 'dialog': false});
+              if(ctx.state.onClose){
+                  ctx.state.onClose(ctx.state.file, ctx.state.metas);
+              }
+          }
+
+      });
   }
   addMeta(){
       var ctx = this;
@@ -73,8 +84,8 @@ class ContainerFileInfo extends Component {
                   return;
               }
           }
-          newMetas.push({'name': ctx.state.newMetaName, 'value': ctx.state.newMetaValue})
-          ctx.setState({'metas': newMetas})
+          newMetas.push({'name': ctx.state.newMetaName, 'value': ctx.state.newMetaValue});
+          ctx.setState({'metas': newMetas});
       }
   }
   changeNewMetaName(event){
@@ -82,6 +93,18 @@ class ContainerFileInfo extends Component {
           return function(event){
             ctx.setState({'newMetaName': event.target.value});
           }
+  }
+  onMetaChange(event){
+      var newMetas = this.state.metas.slice();
+      for(var i=0;i<newMetas.length;i++){
+          var newMeta = newMetas[i];
+          if(newMeta.name == event.target.name){
+              newMeta.value = event.target.value;
+              break;
+          }
+      }
+      this.setState({'metas': newMetas});
+
   }
   render() {
       const actions = [
@@ -101,11 +124,7 @@ class ContainerFileInfo extends Component {
     if(!this.state.dialog) {
          return null;
     }
-    const styles = {
-        tile: {
-            overflowY: 'auto'
-        },
-    }
+
 
     return (
         <Dialog
@@ -116,6 +135,7 @@ class ContainerFileInfo extends Component {
           onRequestClose={this.handleDialogClose}
           autoScrollBodyContent={true}
         >
+            { this.state.error && <div class="label label-error">{this.state.error}</div>}
             <div className="row">
                 <div className="col-sm-6">
                     <div className="field-line" >
@@ -149,6 +169,7 @@ class ContainerFileInfo extends Component {
                                 floatingLabelText={meta.name}
                                 name={meta.name}
                                 value={meta.value}
+                                onChange={this.onMetaChange}
                                 disabled={false}/>
                         </div>
                 ))}
