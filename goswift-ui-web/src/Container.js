@@ -40,10 +40,12 @@ export class Container {
                 callback({'error': error, 'status': jqXHR.status});
             }
         });
+
     }
     static listContainers(callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
+        console.log(config);
         $.ajax({
             url: config.url + "/api/v1/project/" + authData.project,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
@@ -83,13 +85,15 @@ export class Container {
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
         $.ajax({
-            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
+            //url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
+            url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
             success: function(res){
                 //callback({'status': true});
-                callback(res);
+                var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
+                callback({'container': res, 'swift_url': url});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
@@ -101,8 +105,10 @@ export class Container {
     static getContainerMeta(bucket, callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
+        var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '?format=json';
         $.ajax({
-            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
+            // url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
+            url: swift_url,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "HEAD",
             dataType: "json",
@@ -199,6 +205,8 @@ export class Container {
     }
     static metaContainerFile(url, filepath, callback){
         var authData = Auth.getAuthData();
+        // var config = Config.getConfig();
+        // var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '/'+ filepath +'?format=json&path=&delimiter=/&prefix=';
         $.ajax({
             url: url + '/' + filepath,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},

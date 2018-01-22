@@ -32,8 +32,7 @@ class ContainerInfo extends Component {
 
       componentWillReceiveProps(nextProps){
         var ctx = this;
-        //console.log('new container info props', nextProps);
-        if(nextProps.file !== undefined && nextProps.file!=null){
+        if(nextProps.dialog && nextProps.file !== undefined && nextProps.file!=null){
             Container.getContainerMeta(nextProps.file, function(res){
                 console.log('container metas', res)
                 ctx.setState({

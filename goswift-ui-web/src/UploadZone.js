@@ -79,6 +79,7 @@ class UploadZone extends Component {
           file.complete = false;
           this.state.onUpload(file);
       }
+      /*
       if(file.type === '') {
           file.error = 'Directory upload not supported';
           //file.complete = true;
@@ -87,7 +88,7 @@ class UploadZone extends Component {
               this.state.onError(file);
           }
           return;
-      }
+      }*/
       file.url = this.state.swift_url;
 
       var authData = Auth.getAuthData();

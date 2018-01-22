@@ -63,6 +63,7 @@ class Home extends Component {
         this.fileUploadOver = this.fileUploadOver.bind(this);
         this.fileUploadError = this.fileUploadError.bind(this);
         this.showContainerInfo = this.showContainerInfo.bind(this);
+        this.showContainer = this.showContainer.bind(this);
         this.closeContainerInfo = this.closeContainerInfo.bind(this);
         this.deleteContainer = this.deleteContainer.bind(this);
         this.handleNotifClose = this.handleNotifClose.bind(this);
@@ -171,17 +172,22 @@ class Home extends Component {
   }
   showContainer(index){
       // request will by the same time set quotas and enable cors
-      this.setState({'container': this.state.containers[index]});
+      //this.setState({'container': this.state.containers[index]});
       console.log('Get container info for ', this.state.containers[index]);
       var ctx = this;
-      Container.getContainerDetails(this.state.containers[index].name, this.state.path, function(res){
+      Container.getContainerDetails(this.state.containers[index].name, [], function(res){
           if(res === null) {
               Auth.logout();
               ctx.setState({'fireRedirect': true});
               return;
           }
          console.log('container details', res);
-         ctx.setState({'files': res.container, 'swift_url': res.url});
+         ctx.setState({
+            'files': res.container,
+            'swift_url': res.swift_url,
+            'container': ctx.state.containers[index],
+            'path': []
+        });
       });
   }
   deleteFile(msg){
@@ -250,7 +256,7 @@ class Home extends Component {
   createContainer(){
       var ctx = this;
       return function(){
-          if(! ctx.state.swift_url || ctx.state.newContainer === "") {
+          if(ctx.state.newContainer === "") {
               return;
           }
           Container.createContainer(ctx.state.newContainer, function(msg){
@@ -359,38 +365,35 @@ class Home extends Component {
             <UploadProgress files={this.state.uploads}/>
         </div>
         <div className="col-sm">
-            { this.state.swift_url &&
+            { this.state.container &&
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (
                   <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}
-              {this.state.container &&
                    <li key="delete" className="breadcrum-item">
                    <FlatButton aria-label="Delete" onClick={this.deleteContainer(this.state.container.name)}>
                      <DeleteIcon />
                    </FlatButton>
                    </li>
-               }
               </ol>
 
             </nav>
             }
-            { this.state.swift_url &&
+            { this.state.container &&
             <GridList cellHeight={120} cols={2}>
                 <GridTile key="1" col="1" title="Upload drop zone">
-                    {
-                        this.state.swift_url && <UploadZone
-                            swift_url={this.state.swift_url}
-                            path={this.state.path.join()}
-                            onUpload={this.fileUpload}
-                            onProgress={this.fileUploadProgress}
-                            onOver={this.fileUploadOver}
-                            onError={this.fileUploadError}
-                            />
-                    }
-                    {!this.state.swift_url && <p>Select a container for upload</p>}
+                    <UploadZone
+                        swift_url={this.state.swift_url}
+                        path={this.state.path.join()}
+                        onUpload={this.fileUpload}
+                        onProgress={this.fileUploadProgress}
+                        onOver={this.fileUploadOver}
+                        onError={this.fileUploadError}
+                    />
+
+
                 </GridTile>
                 <GridTile key="2" col="1" title="Create folder">
                 <TextField
