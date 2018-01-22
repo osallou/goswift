@@ -240,6 +240,9 @@ class Home extends Component {
   createContainer(){
       var ctx = this;
       return function(){
+          if(! ctx.state.swift_url || ctx.state.newContainer === "") {
+              return;
+          }
           Container.createContainer(ctx.state.newContainer, function(msg){
               if(msg.error){
                   ctx.setState({
