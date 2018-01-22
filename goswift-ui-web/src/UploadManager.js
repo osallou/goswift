@@ -1,12 +1,10 @@
 import $ from 'jquery';
 import { Auth } from './Auth';
 
-import './UploadZone.css';
-
 const PENDING = 0;
 const RUNNING = 1;
 
-class UploadHandler(){
+class UploadHandler {
     constructor(){
         this.status = PENDING;
         this.error_callback = null;
@@ -14,9 +12,10 @@ class UploadHandler(){
     }
     upload(file){
         var authData = Auth.getAuthData();
-
+        console.log('start transfer of', JSON.stringify(file));
+        file.uploading = true;
         $.ajax({
-            url: file.upload_url  +'?format=json',
+            url: file.url  +'?format=json',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "PUT",
             data: file,
@@ -30,12 +29,13 @@ class UploadHandler(){
                   if (myXhr.upload) {
                       // For handling the progress of the upload
                       myXhr.upload.addEventListener('progress', function(e) {
+                          console.log('progress', e);
                           if (e.lengthComputable) {
                               file_to_upload.progress = (e.loaded * 100 / e.total);
                           }
                       } , false);
                       myXhr.upload.addEventListener('load', function(e) {
-                          console.log('upload completed');
+                          console.log('upload completed', e);
                           file_to_upload.complete = true;
                           if(this.complete_callback){
                             this.complete_callback(file_to_upload);
@@ -75,6 +75,7 @@ export class UploadManager {
         this.handlers = [];
         for(var i=0;i<num_workers;i++){
             var newHandler = new UploadHandler();
+            newHandler.onComplete(onCompleteCallback);
             newHandler.onError(onErrorCallback);
             this.handlers.push(newHandler);
         }
@@ -87,8 +88,15 @@ export class UploadManager {
     doUploads(uploads){
         var handler = null;
         var files = Object.keys(uploads);
+        if(files.length>0){
+            console.log("upload pending files");
+        }
         for(var i=0;i<files.length;i++){
-            handler=getAvailableHandler()
+            if(uploads[files[i]].uploading){
+                console.log('already uploading, skipping', JSON.stringify(files[i]));
+                continue;
+            }
+            handler=this.getAvailableHandler();
             if(handler === null){return;}
             handler.upload(uploads[files[i]]);
         }
@@ -96,7 +104,7 @@ export class UploadManager {
     getAvailableHandler(){
         for(var i=0;i<this.handlers.length;i++){
             var handler = this.handlers[i];
-            if(handler.status == PENDING){
+            if(handler.status === PENDING){
                 handler.status = RUNNING;
                 return handler;
             }
@@ -109,10 +117,9 @@ export class UploadManager {
     * Get number of running handlers
     */
     status(){
-
         var count = 0;
-        for(var i=0;i<handlers.length;i++){
-            count += handlers[i].status;
+        for(var i=0;i<this.handlers.length;i++){
+            count += this.handlers[i].status;
         }
         return count;
     }

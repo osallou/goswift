@@ -3,7 +3,7 @@ import $ from 'jquery';
 import Dropzone from 'react-dropzone';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import { Auth } from './Auth';
-
+import { UploadManager } from './UploadManager';
 import './UploadZone.css';
 
 class UploadZone extends Component {
@@ -25,6 +25,13 @@ class UploadZone extends Component {
           this.onDrop = this.onDrop.bind(this);
           this.counter = 0;
           console.log("state", this.state);
+          this.manager = new UploadManager(2, function(file){
+              console.log('completed', file);
+              delete this.uploadProgress[file.id];
+          },function(file){
+              console.log('error', file);
+              delete this.uploadProgress[file.id];
+          });
 
       };
       componentWillReceiveProps(nextProps){
@@ -42,6 +49,7 @@ class UploadZone extends Component {
 
       checkUploads(){
         // console.log('check for uploads', this.uploadProgress);
+        this.manager.doUploads(this.uploadProgress);
         var files = Object.keys(this.uploadProgress);
         for(var i=0;i<files.length;i++){
             //var file = files[i];
@@ -73,7 +81,7 @@ class UploadZone extends Component {
       return file.id;
   }
   uploadFile(file, index){
-
+      file.uploading = false;
       if(this.state.onUpload){
           file.progress = 0;
           file.complete = false;
@@ -89,14 +97,16 @@ class UploadZone extends Component {
           }
           return;
       }*/
-      file.url = this.state.swift_url;
+      // file.url = this.state.swift_url
+      // Set full url for upload manager
+      file.url = this.state.swift_url + '/' + this.state.path + file.name;
 
       var authData = Auth.getAuthData();
 
       this.fileId(file);
       this.uploadProgress[file.id] = file;
 
-
+      /*
       var ctx = this;
       $.ajax({
           url: ctx.state.swift_url + '/' + ctx.state.path + file.name +'?format=json',
@@ -133,6 +143,7 @@ class UploadZone extends Component {
                 return myXhr;
             },
       });
+      */
 
   }
   onDrop(accepted, rejected){
