@@ -343,6 +343,7 @@ class Home extends Component {
             <UploadProgress files={this.state.uploads}/>
         </div>
         <div className="col-sm">
+            { this.state.swift_url &&
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
@@ -359,6 +360,7 @@ class Home extends Component {
               </ol>
 
             </nav>
+            }
             <GridList cellHeight={120} cols={2}>
                 <GridTile key="1" col="1" title="Upload drop zone">
                     {
