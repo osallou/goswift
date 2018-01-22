@@ -332,7 +332,10 @@ class Home extends Component {
                 onChange={this.changeContainer()}
                 value={this.state.newContainer}/>
                 <CreateNewFolderIcon onClick={this.createContainer()}/>
+                <Divider/>
             </li>
+
+
             {this.state.containers.map((container, index) => (
                 <li key={container.name}>
                     <FlatButton label={container.name} onClick={this.showContainer.bind(this, index)}/>
@@ -361,6 +364,7 @@ class Home extends Component {
 
             </nav>
             }
+            { this.state.swift_url &&
             <GridList cellHeight={120} cols={2}>
                 <GridTile key="1" col="1" title="Upload drop zone">
                     {
@@ -384,6 +388,7 @@ class Home extends Component {
                     <CreateNewFolderIcon onClick={this.createFolder()}/>
                 </GridTile>
             </GridList>
+            }
             <Divider />
             <Snackbar
                 open={this.state.notif}

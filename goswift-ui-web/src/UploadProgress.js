@@ -53,7 +53,7 @@ class UploadProgress extends Component {
   render() {
     return (
         <ul className="nav nav-pills flex-column">
-            <li><h4 className="nav-item nav-link">Uploads  <DeleteIcon onClick={this.clear()}/></h4></li>
+            {this.state.uploads.length > 0 && <li><h4 className="nav-item nav-link">Uploads <DeleteIcon onClick={this.clear()}/></h4></li>}
         {this.state.uploads.map((upload, index) => (
             <li className="nav-item nav-link" key={upload.name+'-'+upload.size}>
                 <span className="uploadItem">{upload.name} ({num(upload.size)})</span>
