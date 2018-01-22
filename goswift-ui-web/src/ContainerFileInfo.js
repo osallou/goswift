@@ -98,7 +98,7 @@ class ContainerFileInfo extends Component {
       var newMetas = this.state.metas.slice();
       for(var i=0;i<newMetas.length;i++){
           var newMeta = newMetas[i];
-          if(newMeta.name == event.target.name){
+          if(newMeta.name === event.target.name){
               newMeta.value = event.target.value;
               break;
           }

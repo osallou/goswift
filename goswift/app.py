@@ -288,6 +288,35 @@ def create_project_containers(apiversion, project, container):
     r = requests.put(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container +'?format=json', headers=headers)
     if r.status_code not in [201, 202]:
         abort(r.status_code)
+
+    # Set quota for user project
+    if config['swift']['quotas']:
+        admin_token = get_token({
+            'user': config['swift']['admin']['os_user_id'],
+            'password': config['swift']['admin']['os_user_password'],
+            'domain': config['swift']['admin']['os_user_domain'],
+            'project': config['swift']['admin']['os_user_project']
+        })
+
+        if admin_token:
+            headers = {
+                'X-Auth-Token': admin_token,
+                'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
+            }
+            r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
+            if r.status_code != 200:
+                logging.error('Quota error for ' + str(project) + ':' + r.text)
+                #abort(r.status_code)
+
+    # Set CORS for container
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Container-Meta-Access-Control-Allow-Origin': '*',
+    }
+    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+
     return jsonify({'msg': 'container created'})
 
 
@@ -350,6 +379,7 @@ def get_project_container(apiversion, project, container):
     Set quotas and CORS
     '''
     # Set quota for user project
+    '''
     if config['swift']['quotas']:
         admin_token = get_token({
             'user': config['swift']['admin']['os_user_id'],
@@ -376,6 +406,7 @@ def get_project_container(apiversion, project, container):
     r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
+    '''
 
     # Get container info
     r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=/&prefix=' , headers=headers)

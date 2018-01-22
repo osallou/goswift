@@ -249,7 +249,7 @@ export class Container {
     }
     static updateMetadataContainerFile(url, filepath, metadata, callback){
         var authData = Auth.getAuthData();
-        var config = Config.getConfig();
+        // var config = Config.getConfig();
         $.ajax({
             url: url + '/' + filepath,
             beforeSend: function(xhr){
