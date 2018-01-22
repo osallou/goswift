@@ -30,6 +30,7 @@ export class Container {
             url: url + '?format=json&path=' + filepath+'&delimiter=/&prefix=',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
+            cache: false,
             dataType: "json",
             success: function(res){
                 callback(res);
@@ -49,6 +50,7 @@ export class Container {
             url: config.url + "/api/v1/project/" + authData.project,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
+            cache: false,
             dataType: "json",
             success: function(res){
                 callback({'containers': res.containers});
@@ -89,6 +91,7 @@ export class Container {
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
+            cache: false,
             success: function(res){
                 //callback({'status': true});
                 var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
@@ -111,6 +114,7 @@ export class Container {
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "HEAD",
             dataType: "json",
+            cache: false,
             success: function(res, textStatus, request){
                 //callback({'status': true});
                 var result = [];
@@ -140,6 +144,7 @@ export class Container {
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
+            cache: false,
             success: function(res){
                 callback(res);
             },
@@ -158,6 +163,7 @@ export class Container {
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
+            cache: false,
             success: function(res){
                 callback(res);
             },
@@ -211,6 +217,7 @@ export class Container {
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "HEAD",
             dataType: "json",
+            cache: false,
             success: function(res, textStatus, request){
                 var result = [];
                 var headers = request.getAllResponseHeaders().split("\n");
