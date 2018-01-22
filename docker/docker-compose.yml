@@ -16,8 +16,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile-backend
-        ports:
-            - "8000:8000"
         environment:
             - GOSWIFT_SALT_SECRET=${GOSWIFT_SALT_SECRET}
             - GOSWIFT_SWIFT_KEYSTONE_URL=${GOSWIFT_SWIFT_KEYSTONE_URL}
