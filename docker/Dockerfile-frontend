@@ -9,6 +9,8 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 RUN apt-get update && apt-get install -y nodejs yarn
 RUN cd /root/goswift/goswift-ui-web && yarn install
 
+ADD nginx.conf /etc/nginx/conf.d/default.conf
+
 WORKDIR /root/goswift/goswift-ui-web
 ENV GOSWIFT_WEB_ROOT="/root/goswift/goswift-ui-web"
 ENTRYPOINT ["/root/goswift/docker/startweb.sh"]
