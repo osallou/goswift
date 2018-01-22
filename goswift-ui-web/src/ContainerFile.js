@@ -5,7 +5,7 @@ import { num } from './Utils';
 
 import { Container } from './Container';
 import IconButton from 'material-ui/IconButton';
-import { Card, CardHeader, CardActions } from 'material-ui/Card';
+
 import CloudDownloadIcon from 'material-ui-icons/CloudDownload';
 import FolderIcon from 'material-ui-icons/Folder';
 import DeleteIcon from 'material-ui-icons/Delete';

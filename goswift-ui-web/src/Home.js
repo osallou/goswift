@@ -23,7 +23,6 @@ import {
   TableHeader,
   TableHeaderColumn,
 } from 'material-ui/Table';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
 
 import { GridList, GridTile } from 'material-ui/GridList';
 import Snackbar from 'material-ui/Snackbar';
