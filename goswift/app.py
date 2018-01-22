@@ -407,7 +407,9 @@ def get_project_container(apiversion, project, container):
     if r.status_code != 204:
         abort(r.status_code)
     '''
-
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
     # Get container info
     r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=/&prefix=' , headers=headers)
     if r.status_code != 200:
