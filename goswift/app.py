@@ -212,6 +212,45 @@ def version(apiversion):
     vController = AVAILABLE_VERSIONS[apiversion]()
     return jsonify({'version': vController.get_version_info()})
 
+@app.route('/api/<apiversion>/reauth/<project>', methods=['GET'])
+@requires_auth
+def reauthenticate(apiversion, project):
+
+    auth = {
+        "auth": {
+            "identity": {
+                "methods": [
+                    "token"
+                ],
+                "token": {
+                    "id": request.headers['X-Auth-Token']
+                }
+            },
+            "scope": {
+                "project": {
+                    "id": project
+                }
+            }
+        }
+    }
+    token = None
+
+    try:
+        ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+        r = requests.post(ks_url, json=auth)
+        if not r.status_code == 201:
+            logging.info('Reauthentication failed')
+            abort(401)
+        token = r.headers['X-Subject-Token']
+        r_json = r.json()
+        project_id = r_json['token']['project']['id']
+
+    except Exception as e:
+        logging.exception('Failed to authenticate with Keystone')
+        abort(401)
+
+    return jsonify({'token': token, 'project': project_id})
+
 @app.route('/api/<apiversion>/auth', methods=['POST'])
 def authenticate(apiversion):
     data =  request.get_json()
@@ -254,7 +293,7 @@ def authenticate(apiversion):
         ks_url = config['swift']['keystone_url'] + '/auth/tokens'
         r = requests.post(ks_url, json=auth)
         if not r.status_code == 201:
-            logging.info('Authentication failed: %s' + str(data['user']))
+            logging.info('Authentication failed: %s' % str(data['user']))
             abort(401)
         token = r.headers['X-Subject-Token']
         r_json = r.json()

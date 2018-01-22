@@ -44,6 +44,7 @@ class Home extends Component {
             'containerInfoDialog': false,
             'containerInfoName': null
         }
+        this.authTimer = null;
         this.uploader = null;
         this.expired = this.expired.bind(this);
         Container.onExpiration(this.expired);
@@ -68,6 +69,15 @@ class Home extends Component {
         this.handleDialogClose = this.handleDialogClose.bind(this);
 
   }
+  componentWillUnmount(){
+      clearInterval(this.authTimer);
+  };
+  componentDidMount(){
+      var ctx = this;
+      this.authTimer = setInterval(function(){
+          Auth.reauth();
+      }, 1000 * 60 * 10); // 10 minutes timer
+  };
   expired(){
       console.log('session expired, logout and redirect to login');
       Auth.logout();

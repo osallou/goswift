@@ -9,6 +9,29 @@ export class Auth {
         localStorage.removeItem('goswift-token');
         localStorage.removeItem('goswift-project');
     }
+    static reauth(){
+        console.log('update token')
+        if(!localStorage.getItem('goswift-token') || !localStorage.getItem('goswift-project')){
+            return;
+        }
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/reauth/" + localStorage.getItem('goswift-project'),
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', localStorage.getItem('goswift-token'));},
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json",
+            success: function(res, textStatus, request){
+                localStorage.setItem('goswift-token', res.token);
+                localStorage.setItem('goswift-project', res.project);
+                Auth.setQuotas();
+            },
+            error: function(jqXHR, textStatus, error){
+                console.log('failed to reauth', error);
+            }
+
+        });
+    }
     static login(logdata, callback){
         var config = Config.getConfig();
         $.ajax({
