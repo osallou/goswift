@@ -258,7 +258,7 @@ export class Container {
         var authData = Auth.getAuthData();
         // var config = Config.getConfig();
         $.ajax({
-            url: url + '/' + filepath,
+            url: url + '/' + filepath +'?format=json',
             beforeSend: function(xhr){
                     xhr.setRequestHeader('X-Auth-Token', authData.token);
                     for(var i=0;i<metadata.length;i++){
@@ -269,7 +269,7 @@ export class Container {
                     }
             },
             type: "POST",
-            dataType: "json",
+            //dataType: "json",
             success: function(res){
                 callback(res);
             },
