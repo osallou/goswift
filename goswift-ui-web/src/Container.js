@@ -45,7 +45,6 @@ export class Container {
     static listContainers(callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
-        console.log(config);
         $.ajax({
             url: config.url + "/api/v1/project/" + authData.project,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},

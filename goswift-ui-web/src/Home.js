@@ -34,6 +34,7 @@ class Home extends Component {
             'path': [],
             'linearpath': '',
             'files': [],
+            'dirs': [],
             'notif': false,
             'notif_msg': '',
             'dialog': false,
@@ -74,7 +75,7 @@ class Home extends Component {
       clearInterval(this.authTimer);
   };
   componentDidMount(){
-      var ctx = this;
+      // var ctx = this;
       this.authTimer = setInterval(function(){
           Auth.reauth();
       }, 1000 * 60 * 10); // 10 minutes timer
@@ -148,7 +149,8 @@ class Home extends Component {
           ctx.setState({'path': newpath, 'linearpath': newpath.join('')});
           Container.listContainerDirectory(ctx.state.swift_url, newpath.join(''), function(res){
               // console.log('new folder:',res);
-              ctx.setState({'files': res});
+              var files_and_dirs = ctx.get_files_and_dirs(res);
+              ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
           });
       }
 
@@ -160,15 +162,31 @@ class Home extends Component {
       ctx.setState({'path': subpath, 'linearpath': subpath.join('')});
       Container.listContainerDirectory(ctx.state.swift_url, subpath.join(''), function(res){
           // console.log('folder change', folder, res);
-          ctx.setState({'files': res});
+          var files_and_dirs = ctx.get_files_and_dirs(res);
+          ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
       });
   }
   listContainer(container){
       var ctx = this;
       Container.listContainerDirectory(this.state.swift_url, this.state.path.join(''), function(res){
           //console.log(res);
-          ctx.setState({'files': res});
+          var files_and_dirs = ctx.get_files_and_dirs(res);
+          ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
       });
+  }
+  get_files_and_dirs(res){
+      var files = [];
+      var dirs = []
+      for(var i=0;i<res.length;i++){
+          var file = res[i];
+          if(file.content_type === 'application/directory'){
+              dirs.push(file);
+          }
+          else{
+              files.push(file);
+          }
+      }
+      return({'files': files, 'dirs': dirs});
   }
   showContainer(index){
       // request will by the same time set quotas and enable cors
@@ -182,8 +200,10 @@ class Home extends Component {
               return;
           }
          console.log('container details', res);
+         var files_and_dirs = ctx.get_files_and_dirs(res.container);
          ctx.setState({
-            'files': res.container,
+            'files': files_and_dirs.files,
+            'dirs': files_and_dirs.dirs,
             'swift_url': res.swift_url,
             'container': ctx.state.containers[index],
             'path': []
@@ -248,7 +268,8 @@ class Home extends Component {
               ctx.setState({'newFolder': ''});
               // console.log(res);
               Container.listContainerDirectory(ctx.state.swift_url, ctx.state.path.join(''), function(res){
-                  ctx.setState({'files': res});
+                  var files_and_dirs = ctx.get_files_and_dirs(res);
+                  ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
               });
           })
       }
@@ -422,6 +443,20 @@ class Home extends Component {
               {this.state.dialog_msg}
             </Dialog>
             <GridList>
+            {this.state.dirs.map((containerFile, index) =>(
+                <GridTile key={containerFile.name}>
+                <ContainerFile
+                    swift_url={this.state.swift_url}
+                    file={containerFile}
+                    bucket={this.state.container.name}
+                    onShare={this.share}
+                    onDownload={this.download}
+                    onDelete={this.deleteFile}
+                    onClick={this.gotoFolder}
+                />
+                </GridTile>
+
+            ))}
             {this.state.files.map((containerFile, index) =>(
                 <GridTile key={containerFile.name}>
                 <ContainerFile

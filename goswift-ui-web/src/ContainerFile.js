@@ -13,6 +13,11 @@ import ShareIcon from 'material-ui-icons/Share';
 import InfoIcon from 'material-ui-icons/Info';
 import ContainerFileInfo from './ContainerFileInfo';
 
+import {
+  TableRow,
+  TableRowColumn,
+} from 'material-ui/Table';
+
 class ContainerFile extends Component {
     constructor(props) {
           super(props);
