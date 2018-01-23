@@ -41,7 +41,24 @@ export class Container {
                 callback({'error': error, 'status': jqXHR.status});
             }
         });
-
+    }
+    static listContainerSubFiles(url, filepath, callback){
+        var authData = Auth.getAuthData();
+        $.ajax({
+            url: url + '?format=json&path=' + filepath,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            cache: false,
+            dataType: "json",
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to list: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
+            }
+        });
     }
     static listContainers(callback){
         var authData = Auth.getAuthData();
@@ -187,6 +204,9 @@ export class Container {
         });
     }
     static deleteContainerFile(url, filepath, callback){
+        // console.log('FAKE DELETE', url, filepath);
+        // callback({'fake': true});
+        // return;
         var authData = Auth.getAuthData();
         $.ajax({
             url: url + '/' + filepath,
@@ -223,7 +243,7 @@ export class Container {
     static metaContainerFile(url, filepath, callback){
         var authData = Auth.getAuthData();
         // var config = Config.getConfig();
-        // var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '/'+ filepath +'?format=json&path=&delimiter=/&prefix=';
+        //var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '/'+ filepath +'?format=json&path=&delimiter=/&prefix=';
         $.ajax({
             url: url + '/' + filepath,
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
@@ -233,19 +253,25 @@ export class Container {
             success: function(res, textStatus, request){
                 var result = [];
                 var headers = request.getAllResponseHeaders().split("\n");
+                var complex = false;
+                var complex_url = null;
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
-                    console.log('header', header);
+                    // console.log('header', header);
                     var keyvalue = header.split(':')
                     if(header.startsWith('x-object-manifest')) {
                         result.push({'name': 'X-Object-Manifest', 'value': keyvalue[1].trim()})
+                        complex = true;
+                        complex_url = keyvalue[1].trim();
                     }
                     if(header.startsWith('x-object-meta-')){
                         result.push({'name': keyvalue[0].replace('x-object-meta-', '').trim(), 'value': keyvalue[1].trim()});
                     }
                 }
                 var about = {
-                    'content_length': request.getResponseHeader('Content-Length')
+                    'content_length': request.getResponseHeader('Content-Length'),
+                    'complex': complex,
+                    'complex_url': complex_url
                 }
                 callback({'meta': result, 'about': about});
             },

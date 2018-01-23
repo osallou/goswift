@@ -12,6 +12,7 @@ import DeleteIcon from 'material-ui-icons/Delete';
 import ShareIcon from 'material-ui-icons/Share';
 import InfoIcon from 'material-ui-icons/Info';
 import ContainerFileInfo from './ContainerFileInfo';
+import ContainerFileDelete from './ContainerFileDelete';
 
 import {
   TableRow,
@@ -26,11 +27,15 @@ class ContainerFile extends Component {
               'swift_url': props.swift_url,
               'directory': props.file.content_type === 'application/directory',
               'bucket': props.bucket,
-              'showDetails': false
+              'showDetails': false,
+              'deleteDialog': false,
+              'onDelete': props.onDelete || null
           }
           this.share = this.share.bind(this);
-          console.log('new file',this.state.file);
+          // console.log('new file',this.state.file);
           this.closeInfo = this.closeInfo.bind(this);
+          this.deleteFile = this.deleteFile.bind(this);
+          this.onDeleteDialogClose = this.onDeleteDialogClose.bind(this);
       }
     componentWillReceiveProps(nextProps){
         if(nextProps.file !== undefined && nextProps.file.last_modified !== this.state.file.last_modified){
@@ -66,7 +71,7 @@ class ContainerFile extends Component {
   }
   secondaryInfo(){
       if (! this.state.file) { return ''}
-      console.log('bytes',this.state.file);
+      // console.log('bytes',this.state.file);
       return this.state.file.last_modified + ', size:' + num(this.state.file.bytes );
   }
   download(){
@@ -107,7 +112,32 @@ class ContainerFile extends Component {
           });
         }
   }
+  onDeleteDialogClose(file){
+      var ctx = this;
+      console.log('onDeleteDialogClose', file, ctx.state.onDelete);
+      ctx.setState({'deleteDialog' : false});
+      if(file.cancel !== undefined){
+          return;
+      }
+      if(file!==null && file.error === undefined){
+          if(ctx.state.onDelete){
+              ctx.state.onDelete({'msg': 'File deleted'});
+          }
+
+      }
+      else {
+          if(ctx.state.onDelete){
+              ctx.state.onDelete({'error': 'Failed to delete file'});
+          }
+      }
+
+  }
   deleteFile(){
+      var ctx = this;
+      return function(){
+            ctx.setState({'deleteDialog' : true});
+      }
+      /*
       var ctx = this;
       return function(){
           Container.deleteContainerFile(ctx.state.swift_url, ctx.state.file.name, function(res){
@@ -122,6 +152,7 @@ class ContainerFile extends Component {
               }
           });
         }
+        */
   }
   gotoFolder(){
       var ctx=this;
@@ -153,11 +184,11 @@ class ContainerFile extends Component {
         </TableRowColumn>
         <TableRowColumn>
         {!this.isDirectory() && <InfoIcon onClick={this.showInfo()}/>}
-        {!this.isDirectory() &&
+
         <IconButton aria-label="Delete" onClick={this.deleteFile()}>
           <DeleteIcon />
         </IconButton>
-        }
+        { this.state.deleteDialog && <ContainerFileDelete swift_url={this.state.swift_url} dialog={this.state.deleteDialog} file={this.state.file} onClose={this.onDeleteDialogClose}/>}
         {!this.isDirectory() &&  <IconButton aria-label="Share" onClick={this.share()}>
                   <ShareIcon />
                 </IconButton>
