@@ -59,7 +59,14 @@ def override_config():
 override_config()
 
 if config['debug']:
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(module)s:%(filename)s %(levelname)s %(message)s'
+    )
+else:
+    logging.basicConfig(
+        format='%(asctime)s %(module)s:	%(filename)s %(levelname)s %(message)s'
+    )
 
 MIME_TYPE_JSON = 'application/json'
 MIME_TYPE_JSON_HOME = 'application/json-home'
@@ -357,7 +364,7 @@ def create_project_containers(apiversion, project, container):
                 'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
             }
             r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
-            if r.status_code != 200:
+            if r.status_code not in [200, 204]:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
                 #abort(r.status_code)
 
@@ -448,7 +455,7 @@ def get_project_container(apiversion, project, container):
                 'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
             }
             r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
-            if r.status_code != 200:
+            if r.status_code not in [200, 204]:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
                 #abort(r.status_code)
 

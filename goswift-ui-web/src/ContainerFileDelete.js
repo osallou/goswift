@@ -21,7 +21,7 @@ class ContainerFileDelete extends Component {
               'nbobjectdeleted': 0,
               'loading': true,
               'deleting': false,
-              'deletionComplete': false
+              'deletionComplete': true
           }
           this.handleDialogCancel = this.handleDialogCancel.bind(this);
           this.handleDialogDelete = this.handleDialogDelete.bind(this);
@@ -118,11 +118,12 @@ class ContainerFileDelete extends Component {
                           var config = Config.getConfig();
                           var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + subcontainerPath[0];
                           Container.listContainerSubFiles(swift_url, subcontainerPath.slice(1).join('/'), function(res){
+                              console.log('complex object subparts', res);
                               ctx.elementsToDelete.unshift(file);
                               for(var i=0;i<res.length;i++){
-                                  res.swift_url = swift_url;
-                                  res.complex = false;
-                                  ctx.elementsToDelete.unshift(res);
+                                  res[i].swift_url = swift_url;
+                                  res[i].complex = false;
+                                  ctx.elementsToDelete.unshift(res[i]);
                               }
                               ctx.setState({'nbsubobjects': ctx.state.nbsubobjects + res.length});
                               ctx.deleteFile();
@@ -171,7 +172,7 @@ class ContainerFileDelete extends Component {
                     'nbobjectdeleted': 0,
                     'loading': true,
                     'deleting': false,
-                    'deletionComplete': false
+                    'deletionComplete': true
                 });
                 this.checkInfo();
 
@@ -188,6 +189,7 @@ class ContainerFileDelete extends Component {
   handleDialogDelete(){
       console.log('should delete', this.state.subobjects);
       var ctx = this;
+      ctx.setState({'deletionComplete': false});
       ctx.deleteFile();
       /*
       ctx.setState({'error': '', 'dialog': false});
@@ -209,7 +211,7 @@ class ContainerFileDelete extends Component {
             />,
             <FlatButton
               label="Close"
-              disabled={this.state.deleting}
+              disabled={!this.state.deletionComplete}
               primary={true}
               keyboardFocused={true}
               onClick={this.handleDialogCancel}

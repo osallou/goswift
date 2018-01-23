@@ -204,9 +204,9 @@ export class Container {
         });
     }
     static deleteContainerFile(url, filepath, callback){
-        // console.log('FAKE DELETE', url, filepath);
-        // callback({'fake': true});
-        // return;
+         // console.log('FAKE DELETE', url, filepath);
+         // callback({'fake': true});
+         // return;
         var authData = Auth.getAuthData();
         $.ajax({
             url: url + '/' + filepath,
