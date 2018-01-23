@@ -95,16 +95,16 @@ export class Container {
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
         $.ajax({
-            //url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
-            url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
+            url: config.url + "/api/v1/project/" + authData.project + '/' + bucket,
+            // url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             dataType: "json",
             cache: false,
             success: function(res){
                 //callback({'status': true});
-                var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
-                callback({'container': res, 'swift_url': url});
+                //var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
+                callback({'container': res.container, 'swift_url': res.url});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}

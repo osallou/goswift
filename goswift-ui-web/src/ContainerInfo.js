@@ -25,6 +25,10 @@ class ContainerInfo extends Component {
           var ctx = this;
           if(this.state.container){
               Container.getContainerMeta(this.state.container, function(res){
+                  if(res.error !== undefined) {
+                      console.log('failed to get container', res);
+                      return;
+                  }
                   ctx.setState({'metas': res});
               });
           }
@@ -36,13 +40,11 @@ class ContainerInfo extends Component {
             Container.getContainerMeta(nextProps.file, function(res){
                 console.log('container metas', res);
                 if(res.error !== undefined){
-                    return;
-                }
-                ctx.setState({
-                    'container': nextProps.file,
-                    'dialog': nextProps.dialog,
-                    'metas': res,
-                });
+                    ctx.setState({
+                        'container': nextProps.file,
+                        'dialog': nextProps.dialog,
+                        'metas': res,
+                    });
             });
         }
       }
