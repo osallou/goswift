@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import $ from 'jquery';
+// import $ from 'jquery';
 import Dropzone from 'react-dropzone';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
-import { Auth } from './Auth';
+// import { Auth } from './Auth';
 import { UploadManager } from './UploadManager';
 import './UploadZone.css';
 
@@ -101,7 +101,7 @@ class UploadZone extends Component {
       // Set full url for upload manager
       file.url = this.state.swift_url + '/' + this.state.path + file.name;
 
-      var authData = Auth.getAuthData();
+      // var authData = Auth.getAuthData();
 
       this.fileId(file);
       this.uploadProgress[file.id] = file;

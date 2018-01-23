@@ -178,7 +178,7 @@ class ContainerFileInfo extends Component {
                                 name={meta.name}
                                 value={meta.value}
                                 onChange={this.onMetaChange}
-                                disabled={meta.name=='X-Object-Manifest'}/>
+                                disabled={meta.name === 'X-Object-Manifest'}/>
                         </div>
                 ))}
                 </div>

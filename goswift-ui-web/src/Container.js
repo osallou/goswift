@@ -236,12 +236,11 @@ export class Container {
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
                     console.log('header', header);
+                    var keyvalue = header.split(':')
                     if(header.startsWith('x-object-manifest')) {
-                        var keyvalue = header.split(':')
                         result.push({'name': 'X-Object-Manifest', 'value': keyvalue[1].trim()})
                     }
                     if(header.startsWith('x-object-meta-')){
-                        var keyvalue = header.split(':')
                         result.push({'name': keyvalue[0].replace('x-object-meta-', '').trim(), 'value': keyvalue[1].trim()});
                     }
                 }
@@ -289,7 +288,7 @@ export class Container {
                     xhr.setRequestHeader('X-Auth-Token', authData.token);
                     for(var i=0;i<metadata.length;i++){
                         var meta = metadata[i];
-                        if(meta.name == 'X-Object-Manifest'){
+                        if(meta.name === 'X-Object-Manifest'){
                             xhr.setRequestHeader('X-Object-Manifest', meta.value);
                         }
                         else if(meta.value !== ""){
