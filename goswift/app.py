@@ -318,6 +318,20 @@ def get_project_containers(apiversion, project):
     return jsonify({'containers': r.json(), 'swift_url': url})
 
 
+@app.route('/api/<apiversion>/cors/<project>/<container>', methods=['POST'])
+def set_cors(apiversion, project, container):
+    # Set CORS for container
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Container-Meta-Access-Control-Allow-Origin': '*',
+        'X-Container-Meta-Access-Control-Expose-Headers': 'Content-Length,X-Object-Manifest'
+    }
+    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+
+    return jsonify({'msg': 'done'})
+
 @app.route('/api/<apiversion>/project/<project>/<container>', methods=['POST'])
 @requires_auth
 def create_project_containers(apiversion, project, container):

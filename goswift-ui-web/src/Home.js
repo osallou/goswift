@@ -207,6 +207,13 @@ class Home extends Component {
               return;
           }
          console.log('container details', res);
+         if(res.error !== undefined){
+             ctx.setState({
+                     'notif': true,
+                     'notif_msg': res.error || 'Cannot access container',
+             })
+             return;
+         }
          var files_and_dirs = ctx.get_files_and_dirs(res.container);
          ctx.setState({
             'files': files_and_dirs.files,

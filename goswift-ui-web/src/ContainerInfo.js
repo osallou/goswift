@@ -34,7 +34,10 @@ class ContainerInfo extends Component {
         var ctx = this;
         if(nextProps.dialog && nextProps.file !== undefined && nextProps.file!=null){
             Container.getContainerMeta(nextProps.file, function(res){
-                console.log('container metas', res)
+                console.log('container metas', res);
+                if(res.error !== undefined){
+                    return;
+                }
                 ctx.setState({
                     'container': nextProps.file,
                     'dialog': nextProps.dialog,

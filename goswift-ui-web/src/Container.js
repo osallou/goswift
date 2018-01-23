@@ -53,6 +53,7 @@ export class Container {
             cache: false,
             dataType: "json",
             success: function(res){
+                /*
                 var containers = [];
                 for(var i=0;i<res.containers.length;i++){
                     if(! res.containers[i].name.endsWith('_segments')){
@@ -60,6 +61,8 @@ export class Container {
                     }
                 }
                 callback({'containers': containers});
+                */
+                callback({'containers': res.containers});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
