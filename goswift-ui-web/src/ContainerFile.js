@@ -114,14 +114,14 @@ class ContainerFile extends Component {
   }
   onDeleteDialogClose(file){
       var ctx = this;
-      console.log('onDeleteDialogClose', file, ctx.state.onDelete);
+      // console.log('onDeleteDialogClose', file, ctx.state.onDelete);
       ctx.setState({'deleteDialog' : false});
       if(file.cancel !== undefined){
           return;
       }
       if(file!==null && file.error === undefined){
           if(ctx.state.onDelete){
-              ctx.state.onDelete({'msg': 'File deleted'});
+              ctx.state.onDelete({'msg': 'File(s) deleted'});
           }
 
       }

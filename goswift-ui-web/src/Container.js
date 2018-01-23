@@ -214,7 +214,7 @@ export class Container {
             type: "DELETE",
             dataType: "json",
             success: function(res){
-                callback(res);
+                callback({'res': res});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}

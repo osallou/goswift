@@ -234,7 +234,7 @@ class Home extends Component {
       }
       else {
           this.getContainers();
-          this.setState({'notif': true, 'notif_msg': 'File deleted'});
+          this.setState({'notif': true, 'notif_msg': 'File(s) deleted'});
           this.listContainer(this.state.container.name);
       }
   }

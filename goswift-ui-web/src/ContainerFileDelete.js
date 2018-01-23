@@ -183,7 +183,12 @@ class ContainerFileDelete extends Component {
       this.setState({'dialog': false});
       if(this.state.onClose){
           console.log('call cancel onclose', this.state.file);
-          this.state.onClose({'cancel': true});
+          if(this.state.nbobjectdeleted>0){
+              this.state.onClose({'nbobjectdeleted': this.state.nbobjectdeleted});
+          }
+          else {
+              this.state.onClose({'cancel': true});
+          }
       }
   }
   handleDialogDelete(){
