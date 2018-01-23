@@ -431,7 +431,7 @@ def get_project_container_meta(apiversion, project, container):
 def get_project_container(apiversion, project, container):
     '''
     Set quotas and CORS
-    
+
     # Set quota for user project
     '''
     if config['swift']['quotas']:
@@ -456,12 +456,12 @@ def get_project_container(apiversion, project, container):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
         'X-Container-Meta-Access-Control-Allow-Origin': '*',
-        'X-Container-Meta-Access-Control-Expose-Headers': 'Content-Length,X-Object-Manifest'
+        'X-Container-Meta-Access-Control-Expose-Headers': 'Content-Length,X-Object-Manifest,X-Container-Bytes-Used,X-Container-Object-Count'
     }
     r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
-    
+
 
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],

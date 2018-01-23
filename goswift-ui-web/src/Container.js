@@ -131,6 +131,9 @@ export class Container {
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
                     // console.log('cont meta header', header);
+                    if(header.startsWith('x-container-meta-access')){
+                        continue;
+                    }
                     if(header.startsWith('x-container-')){
                         var keyvalue = header.split(':')
                         result.push({'name': keyvalue[0].replace('x-container-', '').trim(), 'value': keyvalue[1].trim()});
