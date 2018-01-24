@@ -25,15 +25,31 @@ export class Container {
         }
     }
     static listContainerDirectory(url, filepath, callback){
+        console.log('listContainerDirectory');
         var authData = Auth.getAuthData();
         $.ajax({
-            url: url + '?format=json&path=' + filepath+'&delimiter=/&prefix=',
+            url: url + '?format=json&prefix=' + encodeURIComponent(filepath)+'&delimiter=%2F',
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             cache: false,
             dataType: "json",
             success: function(res){
-                callback(res);
+                var files = []
+                for(var i=0;i<res.length;i++){
+                    var file = res[i];
+
+                    if(file.subdir !== undefined){
+                        file.content_type = 'application/directory';
+                        file.name = file.subdir;
+                        file.bytes = 0;
+                        file.last_modified = new Date();
+                    }
+                    if(file.name !== filepath) {
+                        files.push(file);
+                    }
+                    console.log(file);
+                }
+                callback(files);
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
@@ -45,13 +61,26 @@ export class Container {
     static listContainerSubFiles(url, filepath, callback){
         var authData = Auth.getAuthData();
         $.ajax({
-            url: url + '?format=json&path=' + filepath,
+            url: url + '?format=json&prefix=' + encodeURIComponent(filepath),
             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
             type: "GET",
             cache: false,
             dataType: "json",
             success: function(res){
-                callback(res);
+                var files = []
+                for(var i=0;i<res.length;i++){
+                    var file = res[i];
+                    if(file.subdir !== undefined){
+                        file.content_type = 'application/directory';
+                        file.name = file.subdir;
+                        file.bytes = 0;
+                        file.last_modified = new Date();
+                    }
+                    if(file.name !== filepath) {
+                        files.push(file);
+                    }
+                }
+                callback(files);
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}

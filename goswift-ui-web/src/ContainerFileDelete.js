@@ -4,6 +4,7 @@ import Dialog from 'material-ui/Dialog';
 import { Container } from './Container';
 import Config from './Config';
 import LinearProgress from 'material-ui/LinearProgress';
+import CircularProgress from 'material-ui/CircularProgress';
 import FlatButton from 'material-ui/FlatButton';
 import { Auth } from './Auth';
 
@@ -21,7 +22,7 @@ class ContainerFileDelete extends Component {
               'nbobjectdeleted': 0,
               'loading': true,
               'deleting': false,
-              'deletionComplete': true
+              'deletionComplete': false
           }
           this.handleDialogCancel = this.handleDialogCancel.bind(this);
           this.handleDialogDelete = this.handleDialogDelete.bind(this);
@@ -87,7 +88,7 @@ class ContainerFileDelete extends Component {
       }
       terminate(){
           //this.setState({'error': '', 'dialog': false, 'deleting': false});
-          this.setState({'error': '', 'deletionComplete': true});
+          this.setState({'error': '', 'deletionComplete': true, 'deleting': false});
           this.elementsToDelete = [];
           /*
           if(this.state.onClose){
@@ -172,7 +173,7 @@ class ContainerFileDelete extends Component {
                     'nbobjectdeleted': 0,
                     'loading': true,
                     'deleting': false,
-                    'deletionComplete': true
+                    'deletionComplete': false
                 });
                 this.checkInfo();
 
@@ -209,14 +210,14 @@ class ContainerFileDelete extends Component {
       const actions = [
             <FlatButton
               label="Delete"
-              disabled={this.state.deleting || this.state.loading}
+              disabled={this.state.deleting || this.state.loading || this.state.deletionComplete}
               primary={true}
               keyboardFocused={true}
               onClick={this.handleDialogDelete}
             />,
             <FlatButton
               label="Close"
-              disabled={!this.state.deletionComplete}
+              disabled={this.state.deleting}
               primary={true}
               keyboardFocused={true}
               onClick={this.handleDialogCancel}
@@ -237,7 +238,7 @@ class ContainerFileDelete extends Component {
           autoScrollBodyContent={true}
         >
             { this.state.error && <div class="label label-error">{this.state.error}</div>}
-            <div>Loading: {this.state.loading.toString()}</div>
+            <div>{this.state.loading &&  <CircularProgress />}</div>
             { this.state.deleting && <LinearProgress mode="determinate" value={this.state.nbobjectdeleted/(this.state.nbsubobjects+1)*100} />}
             <div className="row">
             <p>Delete {this.state.file.name} <span> [ {this.state.nbsubobjects} sub elements ]</span> ?</p>

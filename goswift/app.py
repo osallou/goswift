@@ -474,7 +474,7 @@ def get_project_container(apiversion, project, container):
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
     # Get container info
-    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=/&prefix=' , headers=headers)
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=%2F' , headers=headers)
     if r.status_code != 200:
         abort(r.status_code)
     return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})
