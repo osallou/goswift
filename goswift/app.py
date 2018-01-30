@@ -507,7 +507,6 @@ def delete_index_container(apiversion, project, container, filepath):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
-    # Get container info
     r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
@@ -516,7 +515,7 @@ def delete_index_container(apiversion, project, container, filepath):
     return jsonify({'msg': 'ok'})
 
 
-@app.route('/api/<apiversion>/index/project/<project>/<container>', methods=['GET'])
+@app.route('/api/<apiversion>/search/project/<project>/<container>', methods=['POST'])
 @requires_auth
 def search_index_container(apiversion, project, container):
     if not es:
@@ -524,13 +523,13 @@ def search_index_container(apiversion, project, container):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
-    # Get container info
     r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
     data = request.get_json()
     # data['query'] : Lucene syntax
-    res = es.search(index="test-index", q=data['query'], size=1000)
+    logging.error("###"+str(data))
+    res = es.search(index=config['elastic']['index'], q=data['query'], size=1000)
     return jsonify(res)
 
 
@@ -542,7 +541,6 @@ def update_index_container(apiversion, project, container, filepath):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
-    # Get container info
     r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)

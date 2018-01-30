@@ -6,9 +6,11 @@ import UploadProgress from './UploadProgress';
 import { Container } from './Container';
 import ContainerFile from './ContainerFile';
 import ContainerInfo from './ContainerInfo';
+import SearchContainer from './SearchContainer';
 // import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
 import FlatButton from 'material-ui/FlatButton';
 import InfoIcon from 'material-ui-icons/Info';
+import SearchIcon from 'material-ui-icons/Search';
 import DeleteIcon from 'material-ui-icons/Delete';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
@@ -50,7 +52,8 @@ class Home extends Component {
             'newContainer': '',
             'uploads': [],
             'containerInfoDialog': false,
-            'containerInfoName': null
+            'containerInfoName': null,
+            'search': false
         }
         this.authTimer = null;
         this.uploader = null;
@@ -58,6 +61,7 @@ class Home extends Component {
         Container.onExpiration(this.expired);
         this.getContainers();
         this.changeFolder = this.changeFolder.bind(this);
+        this.searchFiles = this.searchFiles.bind(this);
         this.createFolder = this.createFolder.bind(this);
         this.createContainer = this.createContainer.bind(this);
         this.changeContainer = this.changeContainer.bind(this);
@@ -87,6 +91,12 @@ class Home extends Component {
           Auth.reauth();
       }, 1000 * 60 * 10); // 10 minutes timer
   };
+  searchFiles(){
+      var ctx = this;
+      return function(){
+          ctx.setState({'search': true});
+      }
+  }
   expired(){
       console.log('session expired, logout and redirect to login');
       Auth.logout();
@@ -178,7 +188,7 @@ class Home extends Component {
       Container.listContainerDirectory(this.state.swift_url, this.state.path.join(''), function(res){
           //console.log(res);
           var files_and_dirs = ctx.get_files_and_dirs(res);
-          ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
+          ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs, 'search': false});
       });
   }
   get_files_and_dirs(res){
@@ -371,7 +381,6 @@ class Home extends Component {
     return (
       <div className="row">
       {this.state.fireRedirect && (<Redirect to={'/'}/>)}
-
           <ContainerInfo
           file={this.state.containerInfoName}
           onClose={this.closeContainerInfo}
@@ -400,7 +409,8 @@ class Home extends Component {
             <UploadProgress files={this.state.uploads}/>
         </div>
 
-        <div className="col-sm">
+        { this.state.search && <div className="col-sm"><SearchContainer container={this.state.container}/></div>}
+        { !this.state.search && <div className="col-sm">
             { this.state.container &&
 
             <nav aria-label="breadcrumb">
@@ -414,9 +424,15 @@ class Home extends Component {
                      <DeleteIcon />
                    </FlatButton>
                    </li>
+                   <li key="search" className="breadcrum-item">
+                   <FlatButton aria-label="search" onClick={this.searchFiles()}>
+                     Search <SearchIcon />
+                   </FlatButton>
+                   </li>
               </ol>
 
             </nav>
+
 
             }
             { this.state.container &&
@@ -492,7 +508,7 @@ class Home extends Component {
             ))}
             </TableBody>
             </Table>
-        </div>
+        </div>}
       </div>
     );
   }
