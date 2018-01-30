@@ -20,6 +20,9 @@ from flask import Response
 
 from flask_cors import CORS, cross_origin
 
+import jwt
+
+from elasticsearch import Elasticsearch
 
 from goswift import version
 
@@ -56,6 +59,9 @@ def override_config():
     if 'GOSWIFT_SWIFT_QUOTAS' in os.environ and os.environ['GOSWIFT_SWIFT_QUOTAS']:
         config['swift']['quotas'] = os.environ['GOSWIFT_SWIFT_QUOTAS']
 
+    if 'GOSWIFT_ELASTIC_HOST' in os.environ and os.environ['GOSWIFT_ELASTIC_HOST']:
+        config['elastic']['hosts'] = [os.environ['GOSWIFT_ELASTIC_HOST']]
+
 override_config()
 
 if config['debug']:
@@ -71,6 +77,19 @@ else:
 MIME_TYPE_JSON = 'application/json'
 MIME_TYPE_JSON_HOME = 'application/json-home'
 MEDIA_TYPE_JSON = 'application/vnd.openstack.key-manager-%s+json'
+
+es = None
+if config['elastic']['hosts']:
+    es = Elasticsearch(
+        config['elastic']['hosts'],
+        # sniff before doing anything
+        sniff_on_start=True,
+        # refresh nodes after a node fails to respond
+        sniff_on_connection_fail=True,
+        # and also every 60 seconds
+        sniffer_timeout=60
+    )
+    es.indices.create(index=config['elastic']['index'], ignore=400)
 
 def _get_base_url_from_request():
     if not config['host_href'] and hasattr(request, 'url'):
@@ -260,7 +279,7 @@ def reauthenticate(apiversion, project):
 
 @app.route('/api/<apiversion>/auth', methods=['POST'])
 def authenticate(apiversion):
-    data =  request.get_json()
+    data = request.get_json()
     logging.info(str(data))
     if not data or 'user' not in data or 'password' not in data or 'project' not in data:
         abort(401)
@@ -478,6 +497,71 @@ def get_project_container(apiversion, project, container):
     if r.status_code != 200:
         abort(r.status_code)
     return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})
+
+
+@app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['DELETE'])
+@requires_auth
+def delete_index_container(apiversion, project, container, filepath):
+    if not es:
+        abort(403)
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    # Get container info
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    docid = project+'_'+container+'_'+filepath.replace('/','_')
+    es.delete(index=config['elastic']['index'], doc_type='swift', id=docid, body=doc)
+    return jsonify({'msg': 'ok'})
+
+
+@app.route('/api/<apiversion>/index/project/<project>/<container>', methods=['GET'])
+@requires_auth
+def search_index_container(apiversion, project, container):
+    if not es:
+        abort(403)
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    # Get container info
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    data = request.get_json()
+    # data['query'] : Lucene syntax
+    res = es.search(index="test-index", q=data['query'], size=1000)
+    return jsonify(res)
+
+
+@app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
+def update_index_container(apiversion, project, container, filepath):
+    if not es:
+        abort(403)
+    logging.debug("HEADERS "+str(request.headers))
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    # Get container info
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    docid = project+'_'+container+'_'+filepath.replace('/','_')
+    metas =[]
+    for header, value in request.headers.items():
+        if header.startswith('X-Object-Meta-'):
+            meta = {}
+            meta[header.replace('X-Object-Meta-', '').lower()] = value
+            metas.append(meta)
+    doc = {
+        'project': project,
+        'container': container,
+        'object': str(filepath).split('/'),
+        'metadata': metas
+    }
+    es.index(index=config['elastic']['index'], doc_type='swift', id=docid, body=doc)
+    return jsonify({'msg': 'ok'})
+
 
 
 if __name__ == "__main__":

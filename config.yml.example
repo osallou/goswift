@@ -22,3 +22,8 @@ swift:
     defaults:
         domain: 'Users'
     quotas: '1G'
+
+elastic:
+    hosts:
+      - 'localhost'
+    index: 'goswift'

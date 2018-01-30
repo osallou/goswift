@@ -56,6 +56,29 @@ Backend
   # For prod
   gunicorn -b 0.0.0.0 goswift.app:app
 
+========
+Indexing
+========
+
+Swift does not propose search operations. Goswift can be used to index objects
+path and metadata to allow later queries.
+To do so, *middleware* (middleware/ directory) must be installed on proxy-server
+swift location and added to the pipeline.
+On POST/PUT/DELETE object operations, a request is sent to goswift and data
+is (de)indexed.
+
+Example, in proxy-server.conf:
+
+    pipeline = .... goswiftindex ... proxy-server
+
+    [filter:goswiftindex]
+    use = egg:goswiftindex#middleware
+    server = http://1.2.3.4.5:6543
+
+Goswift makes use of elasticsearch. Docker compose installs a single node
+elasticsearch server, but it may not fit in production for large systems.
+You should in this case specify your own elasticsearch servers in goswift config.
+
 
 ======
 Docker
