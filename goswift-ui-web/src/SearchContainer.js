@@ -97,9 +97,9 @@ class SearchContainer extends Component {
         </TableHeader>
         <TableBody>
         {this.state.files.map((containerFile, index) =>(
-            <TableRow key={containerFile._source.container}>
+            <TableRow key={containerFile._source.object.join('/')}>
             <TableRowColumn>
-                {containerFile._source.container}
+                {containerFile._source.object.join('/')}
             </TableRowColumn>
             <TableRowColumn>
                 {containerFile._source.metadata.map((meta, index) =>(
