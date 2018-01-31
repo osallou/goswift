@@ -15,6 +15,8 @@ import {
   TableRowColumn,
 } from 'material-ui/Table';
 
+
+
 class SearchContainer extends Component {
     constructor(props) {
           super(props);
@@ -74,12 +76,18 @@ class SearchContainer extends Component {
     };
     return (
         <div>
-        <TextField
-                           floatingLabelText="Search"
-                           name="search"
-                           onChange={this.changeSearch()}
-                           value={this.state.search}/>
-                           <SearchIcon onClick={this.searchFiles()}/>
+        <nav className="navbar  navbar-light bg-faded">
+                <ul className="navbar-nav mr-auto">
+                  <li className="nav-item active">
+                    <a className="nav-link" href="#"><span>{this.state.container.name}</span></a>
+                 </li>
+                 </ul>
+                 <form className="form-inline my-2 my-lg-0">
+                    <input className="form-control mr-sm-2" type="text" placeholder="Search" onChange={this.changeSearch()} value={this.state.search}/>
+                    <SearchIcon onClick={this.searchFiles()}/>
+                  </form>
+
+        </nav>
         <Table >
         <TableHeader>
         <TableRow>

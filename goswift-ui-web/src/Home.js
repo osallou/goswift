@@ -9,6 +9,7 @@ import ContainerInfo from './ContainerInfo';
 import SearchContainer from './SearchContainer';
 // import { List, ListItem, ListItemText, ListItemSecondaryAction } from 'material-ui/List';
 import FlatButton from 'material-ui/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton';
 import InfoIcon from 'material-ui-icons/Info';
 import SearchIcon from 'material-ui-icons/Search';
 import DeleteIcon from 'material-ui-icons/Delete';
@@ -213,7 +214,7 @@ class Home extends Component {
       Container.getContainerDetails(this.state.containers[index].name, [], function(res){
           if(res === null) {
               Auth.logout();
-              ctx.setState({'fireRedirect': true});
+              ctx.setState({'fireRedirect': true, 'search': false});
               return;
           }
          console.log('container details', res);
@@ -230,7 +231,8 @@ class Home extends Component {
             'dirs': files_and_dirs.dirs,
             'swift_url': res.swift_url,
             'container': ctx.state.containers[index],
-            'path': []
+            'path': [],
+            'search': false
         });
       });
   }
@@ -413,7 +415,7 @@ class Home extends Component {
         { !this.state.search && <div className="col-sm">
             { this.state.container &&
 
-            <nav aria-label="breadcrumb">
+            <nav className="navbar  navbar-light bg-faded">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (
@@ -424,14 +426,19 @@ class Home extends Component {
                      <DeleteIcon />
                    </FlatButton>
                    </li>
-                   <li key="search" className="breadcrum-item">
-                   <FlatButton aria-label="search" onClick={this.searchFiles()}>
-                     Search <SearchIcon />
-                   </FlatButton>
-                   </li>
+
               </ol>
+              <form className="form-inline my-2 my-lg-0">
+                  <RaisedButton
+                   primary={true}
+                   onClick={this.searchFiles()}
+                   label="Search"
+                   icon={<SearchIcon/>}
+                   />
+               </form>
 
             </nav>
+
 
 
             }
