@@ -20,8 +20,6 @@ from flask import Response
 
 from flask_cors import CORS, cross_origin
 
-import jwt
-
 from elasticsearch import Elasticsearch
 
 from goswift import version
