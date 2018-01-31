@@ -27,3 +27,9 @@ services:
             - GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN=${GOSWIFT_SWIFT_ADMIN_OS_USER_DOMAIN}
             - GOSWIFT_SWIFT_DEFAULTS_DOMAIN=${GOSWIFT_SWIFT_DEFAULTS_DOMAIN}
             - GOSWIFT_SWIFT_QUOTAS=${GOSWIFT_SWIFT_QUOTAS}
+            - GOSWIFT_ELASTIC_HOST=goswift-elastic
+
+    goswift-elastic:
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
+        environment:
+            - discovery.type=single-node
