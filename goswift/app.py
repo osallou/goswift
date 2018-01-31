@@ -531,8 +531,27 @@ def search_index_container(apiversion, project, container):
     return jsonify(res)
 
 
+def __set_quotas(project):
+    if config['swift']['quotas']:
+        admin_token = get_token({
+            'user': config['swift']['admin']['os_user_id'],
+            'password': config['swift']['admin']['os_user_password'],
+            'domain': config['swift']['admin']['os_user_domain'],
+            'project': config['swift']['admin']['os_user_project']
+        })
+
+        if admin_token:
+            headers = {
+                'X-Auth-Token': admin_token,
+                'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
+            }
+            r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
+            if r.status_code not in [200, 204]:
+                logging.error('Quota error for ' + str(project) + ':' + r.text)
+
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
+    __set_quotas(project)
     if not es:
         abort(403)
     logging.debug("HEADERS "+str(request.headers))
