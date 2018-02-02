@@ -16,6 +16,7 @@ import DeleteIcon from 'material-ui-icons/Delete';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
 import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 // import CloudUploadIcon from 'material-ui-icons/CloudUpload';
+import { num } from './Utils';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
 import {
@@ -56,7 +57,8 @@ class Home extends Component {
             'uploads': [],
             'containerInfoDialog': false,
             'containerInfoName': null,
-            'search': false
+            'search': false,
+            'quota': 0,
         }
         this.authTimer = null;
         this.uploader = null;
@@ -122,7 +124,7 @@ class Home extends Component {
               return;
           }
           console.log(msg.containers);
-          ctx.setState({'containers': msg.containers});
+          ctx.setState({'containers': msg.containers, 'quota': msg.quota});
 
       });
 
@@ -412,6 +414,8 @@ class Home extends Component {
             ))}
             </Menu>
             <Divider />
+            <FlatButton primary={true} label={"Quota: " + num(this.state.quota)}/>
+            <Divider />
             <Menu
                 desktop={true}
                 disableAutoFocus={true}
@@ -436,7 +440,7 @@ class Home extends Component {
         { !this.state.search && <div className="col-sm">
             { this.state.container &&
 
-            <nav className="navbar  navbar-light ">
+            <nav className="navbar navbar-light">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (

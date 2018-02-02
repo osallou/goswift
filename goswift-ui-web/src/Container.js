@@ -108,7 +108,7 @@ export class Container {
                 }
                 callback({'containers': containers});
                 */
-                callback({'containers': res.containers});
+                callback({'containers': res.containers, 'quota': res.quota});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
