@@ -20,6 +20,8 @@ class GoSwiftIndexMiddleware(object):
         except ValueError:
             return self.app
 
+        resp = request.get_response(self.app)
+
         index_path = '/v1/%s/%s/%s' % (account.replace('AUTH_', ''), container, objname)
 
         headers = {}
@@ -38,7 +40,7 @@ class GoSwiftIndexMiddleware(object):
             except Exception:
                 pass
 
-        return self.app
+        return resp
 
 def filter_factory(global_config, **local_config):
     server = local_config.get('server')
