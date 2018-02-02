@@ -164,7 +164,7 @@ class UploadZone extends Component {
   render() {
     return (
         <Dropzone className="UploadZone" onDrop={this.onDrop}>
-            lower than 5Gb <CloudUploadIcon/>
+            lower than 5Gb, use swiftclient for larger uploads <CloudUploadIcon/>
         </Dropzone>
     );
   }

@@ -169,7 +169,7 @@ class ContainerFile extends Component {
   }
   render() {
     return (
-        <TableRow>
+        <TableRow key={this.state.file.name}>
         <TableRowColumn>
         {this.state.showDetails &&
             <ContainerFileInfo

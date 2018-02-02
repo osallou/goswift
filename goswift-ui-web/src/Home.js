@@ -18,7 +18,6 @@ import CreateNewFolderIcon from 'material-ui-icons/CreateNewFolder';
 // import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
-import Divider from 'material-ui/Divider';
 import {
   Table,
   TableBody,
@@ -26,6 +25,9 @@ import {
   TableHeader,
   TableHeaderColumn,
 } from 'material-ui/Table';
+import Menu from 'material-ui/Menu';
+import MenuItem from 'material-ui/MenuItem';
+import Divider from 'material-ui/Divider';
 
 import { GridList, GridTile } from 'material-ui/GridList';
 import Snackbar from 'material-ui/Snackbar';
@@ -206,7 +208,9 @@ class Home extends Component {
       }
       return({'files': files, 'dirs': dirs});
   }
-  showContainer(index){
+  // function(event: object, menuItem: object, index: number)
+  //showContainer(index){
+  showContainer(event, menuItem, index){
       // request will by the same time set quotas and enable cors
       //this.setState({'container': this.state.containers[index]});
       console.log('Get container info for ', this.state.containers[index]);
@@ -380,6 +384,7 @@ class Home extends Component {
               onClick={this.handleDialogClose}
             />,
           ];
+
     return (
       <div className="row">
       {this.state.fireRedirect && (<Redirect to={'/'}/>)}
@@ -390,24 +395,40 @@ class Home extends Component {
 
         <div className="col-sm-3">
             <h4>Containers</h4>
-            <ul className="nav nav-pills flex-column">
-            <li><TextField
+
+            <Menu
+                desktop={true}
+                onItemClick={this.showContainer}
+                disableAutoFocus={true}
+            >
+            {this.state.containers.map((container, index) => (
+                <MenuItem
+                    key={container.name}
+                    primaryText={container.name}
+                    value={container.name}
+                    rightIcon={<InfoIcon onClick={this.showContainerInfo(container.name)}/>}
+                />
+
+            ))}
+            </Menu>
+            <Divider />
+            <Menu
+                desktop={true}
+                disableAutoFocus={true}
+            >
+            <MenuItem>
+            <TextField
                 floatingLabelText="container name"
                 name="newContainer"
                 onChange={this.changeContainer()}
                 value={this.state.newContainer}/>
                 <CreateNewFolderIcon onClick={this.createContainer()}/>
-                <Divider/>
-            </li>
+            </MenuItem>
+            </Menu>
+            <Divider />
 
 
-            {this.state.containers.map((container, index) => (
-                <li key={container.name}>
-                    <FlatButton label={container.name} onClick={this.showContainer.bind(this, index)}/>
-                    <InfoIcon onClick={this.showContainerInfo(container.name)}/>
-                </li>
-            ))}
-            </ul>
+
             <UploadProgress files={this.state.uploads}/>
         </div>
 
@@ -415,7 +436,7 @@ class Home extends Component {
         { !this.state.search && <div className="col-sm">
             { this.state.container &&
 
-            <nav className="navbar  navbar-light bg-faded">
+            <nav className="navbar  navbar-light ">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (
@@ -428,6 +449,14 @@ class Home extends Component {
                    </li>
 
               </ol>
+              <form className="form-inline my-2 my-lg-0">
+                   <TextField
+                  floatingLabelText="Create folder"
+                  name="newFolder"
+                  onChange={this.changeFolder()}
+                  value={this.state.newFolder}/>
+                  <CreateNewFolderIcon onClick={this.createFolder()}/>
+               </form>
               <form className="form-inline my-2 my-lg-0">
                   <RaisedButton
                    primary={true}
@@ -443,8 +472,8 @@ class Home extends Component {
 
             }
             { this.state.container &&
-            <GridList cellHeight={120} cols={2}>
-                <GridTile key="1" col="1" title="Upload drop zone">
+            <GridList cellHeight={120} >
+                <GridTile key="1"  cols={2} title="Upload drop zone">
                     <UploadZone
                         swift_url={this.state.swift_url}
                         path={this.state.path.join()}
@@ -453,16 +482,6 @@ class Home extends Component {
                         onOver={this.fileUploadOver}
                         onError={this.fileUploadError}
                     />
-
-
-                </GridTile>
-                <GridTile key="2" col="1" >
-                <TextField
-                    floatingLabelText="Create folder"
-                    name="newFolder"
-                    onChange={this.changeFolder()}
-                    value={this.state.newFolder}/>
-                    <CreateNewFolderIcon onClick={this.createFolder()}/>
                 </GridTile>
             </GridList>
             }
@@ -482,6 +501,7 @@ class Home extends Component {
             >
               {this.state.dialog_msg}
             </Dialog>
+
             <Table >
             <TableHeader>
             <TableRow>

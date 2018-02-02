@@ -509,7 +509,10 @@ def delete_index_container(apiversion, project, container, filepath):
     if r.status_code != 204:
         abort(r.status_code)
     docid = project+'_'+container+'_'+filepath.replace('/','_')
-    es.delete(index=config['elastic']['index'], doc_type='swift', id=docid, body=doc)
+    try:
+        es.delete(index=config['elastic']['index'] +'-' + project, doc_type='swift', id=docid, body=doc)
+    except Exception as e:
+        logging.error('Deletion error: ' + str(e))
     return jsonify({'msg': 'ok'})
 
 
@@ -527,7 +530,12 @@ def search_index_container(apiversion, project, container):
     data = request.get_json()
     # data['query'] : Lucene syntax
     logging.error("###"+str(data))
-    res = es.search(index=config['elastic']['index'], q=data['query'], size=1000)
+    res = None
+    try:
+        res = es.search(index=config['elastic']['index'] + '-' + project, q=data['query'], size=1000)
+    except Exception as e:
+        logging.error('Search error: ' + str(e))
+        res = {'hits': {'hits': []}}
     return jsonify(res)
 
 
@@ -554,7 +562,6 @@ def update_index_container(apiversion, project, container, filepath):
     __set_quotas(project)
     if not es:
         abort(403)
-    logging.debug("HEADERS "+str(request.headers))
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
@@ -574,7 +581,8 @@ def update_index_container(apiversion, project, container, filepath):
         'object': str(filepath).split('/'),
         'metadata': metas
     }
-    es.index(index=config['elastic']['index'], doc_type='swift', id=docid, body=doc)
+    es.indices.create(index=config['elastic']['index'] + '-' + project, ignore=400)
+    es.index(index=config['elastic']['index'] + '-' + project, doc_type='swift', id=docid, body=doc)
     return jsonify({'msg': 'ok'})
 
 
