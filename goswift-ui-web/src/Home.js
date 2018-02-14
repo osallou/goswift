@@ -59,6 +59,7 @@ class Home extends Component {
             'containerInfoName': null,
             'search': false,
             'quota': 0,
+            'used': 0
         }
         this.authTimer = null;
         this.uploader = null;
@@ -124,7 +125,11 @@ class Home extends Component {
               return;
           }
           // console.log(msg.containers);
-          ctx.setState({'containers': msg.containers, 'quota': msg.quota});
+          var total = 0;
+          for(var i=0;i<msg.containers.length;i++){
+              total += msg.containers[i].bytes;
+          }
+          ctx.setState({'containers': msg.containers, 'quota': msg.quota, 'used': total});
 
       });
 
@@ -414,7 +419,7 @@ class Home extends Component {
             ))}
             </Menu>
             <Divider />
-            <FlatButton primary={true} label={"Quota: " + num(this.state.quota)}/>
+            <FlatButton primary={true} label={"Quota: " + num(this.state.used) + " / "+ num(this.state.quota)}/>
             <Divider />
             <Menu
                 desktop={true}
