@@ -123,7 +123,7 @@ class Home extends Component {
               }
               return;
           }
-          console.log(msg.containers);
+          // console.log(msg.containers);
           ctx.setState({'containers': msg.containers, 'quota': msg.quota});
 
       });
@@ -151,13 +151,13 @@ class Home extends Component {
   showContainerInfo(containerName){
       var ctx = this;
       return function(){
-          console.log('show cont info now', containerName);
+          // console.log('show cont info now', containerName);
           ctx.setState({containerInfoDialog: true, containerInfoName: containerName});
       }
   }
   closeContainerInfo(){
       var ctx = this;
-          console.log('close container info');
+          // console.log('close container info');
           ctx.setState({containerInfoDialog: false});
   }
   gotoFolderIndex(folderIndex){
@@ -215,7 +215,7 @@ class Home extends Component {
   showContainer(event, menuItem, index){
       // request will by the same time set quotas and enable cors
       //this.setState({'container': this.state.containers[index]});
-      console.log('Get container info for ', this.state.containers[index]);
+      // console.log('Get container info for ', this.state.containers[index]);
       var ctx = this;
       Container.getContainerDetails(this.state.containers[index].name, [], function(res){
           if(res === null) {
@@ -223,7 +223,7 @@ class Home extends Component {
               ctx.setState({'fireRedirect': true, 'search': false});
               return;
           }
-         console.log('container details', res);
+         // console.log('container details', res);
          if(res.error !== undefined){
              ctx.setState({
                      'notif': true,
@@ -243,7 +243,7 @@ class Home extends Component {
       });
   }
   deleteFile(msg){
-      console.log('delete event', msg);
+      // console.log('delete event', msg);
       if(msg.error){
           this.setState({
                   'notif': true,
@@ -257,7 +257,7 @@ class Home extends Component {
       }
   }
   download(msg){
-      console.log('download event', msg);
+      // console.log('download event', msg);
       if(msg.error){
           this.setState({
                   'notif': true,
@@ -266,7 +266,7 @@ class Home extends Component {
       }
   }
   share(msg){
-      console.log('share event', msg);
+      // console.log('share event', msg);
       if(msg.error){
           this.setState({
                   'notif': true,
@@ -348,7 +348,7 @@ class Home extends Component {
   }
   */
   fileUpload(file){
-      console.log('file upload', file);
+      // console.log('file upload', file);
       // console.log('state', this.state);
       var uploadFiles = this.state.uploads.slice();
       uploadFiles.push(file);

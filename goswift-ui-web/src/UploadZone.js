@@ -24,9 +24,9 @@ class UploadZone extends Component {
           this.timerInterval = 5000;
           this.onDrop = this.onDrop.bind(this);
           this.counter = 0;
-          console.log("state", this.state);
+          // console.log("state", this.state);
           this.manager = new UploadManager(2, function(file){
-              console.log('completed', file);
+              // console.log('completed', file);
               delete this.uploadProgress[file.id];
           },function(file){
               console.log('error', file);

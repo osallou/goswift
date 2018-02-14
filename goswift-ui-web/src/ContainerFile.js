@@ -157,7 +157,7 @@ class ContainerFile extends Component {
   gotoFolder(){
       var ctx=this;
       return function(){
-          console.log('gotoFolder', ctx.state.file);
+          // console.log('gotoFolder', ctx.state.file);
 
           if(ctx.isDirectory()){
               if(ctx.props.onClick){

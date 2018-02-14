@@ -55,7 +55,7 @@ class ContainerFileDelete extends Component {
               Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
                   if(res.about.complex){
                       ctx.state.file.complex = true;
-                      console.log('complex object', res.about);
+                      // console.log('complex object', res.about);
                       var subcontainerPath = res.about.complex_url.split('/');
                       var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + subcontainerPath[0];
                       Container.listContainerSubFiles(swift_url, subcontainerPath.slice(1).join('/'), function(res){
@@ -64,7 +64,7 @@ class ContainerFileDelete extends Component {
                               res[i].complex = false;
                               ctx.elementsToDelete.push(res[i]);
                           }
-                          console.log('file subobjects', res);
+                          // console.log('file subobjects', res);
                           sub = res;
                           nbsub = res.length;
                           ctx.setState({'loading': false, 'subobjects': sub, 'nbsubobjects': nbsub});
@@ -99,7 +99,7 @@ class ContainerFileDelete extends Component {
       }
       deleteFile(){
           var ctx = this;
-          console.log('call deletefile');
+          // console.log('call deletefile');
           var file = this.elementsToDelete.shift();
           if(file === undefined){
               this.terminate();
@@ -113,13 +113,13 @@ class ContainerFileDelete extends Component {
                   Container.metaContainerFile(this.state.swift_url, file.name, function(res){
                       if(res.about.complex){
                           file.complex = true;
-                          console.log('complex object', res.about);
+                          // console.log('complex object', res.about);
                           var subcontainerPath = res.about.complex_url.split('/');
                           var authData = Auth.getAuthData();
                           var config = Config.getConfig();
                           var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + subcontainerPath[0];
                           Container.listContainerSubFiles(swift_url, subcontainerPath.slice(1).join('/'), function(res){
-                              console.log('complex object subparts', res);
+                              // console.log('complex object subparts', res);
                               ctx.elementsToDelete.unshift(file);
                               for(var i=0;i<res.length;i++){
                                   res[i].swift_url = swift_url;
@@ -148,7 +148,7 @@ class ContainerFileDelete extends Component {
           }
           Container.deleteContainerFile(url, file.name, function(res){
               if(res.error !== undefined){
-                  console.log('deletion error', res);
+                  // console.log('deletion error', res);
                   ctx.setState({'error': 'Failed to delete file ' + file.name});
                   return;
               }
@@ -159,7 +159,7 @@ class ContainerFileDelete extends Component {
           });
       }
       componentWillReceiveProps(nextProps){
-        console.log('new container file info props', nextProps);
+        // console.log('new container file info props', nextProps);
         var ctx = this;
         if(nextProps.file !== undefined){
                 ctx.setState({
@@ -183,7 +183,7 @@ class ContainerFileDelete extends Component {
   handleDialogCancel(){
       this.setState({'dialog': false});
       if(this.state.onClose){
-          console.log('call cancel onclose', this.state.file);
+          // console.log('call cancel onclose', this.state.file);
           if(this.state.nbobjectdeleted>0){
               this.state.onClose({'nbobjectdeleted': this.state.nbobjectdeleted});
           }
@@ -193,7 +193,7 @@ class ContainerFileDelete extends Component {
       }
   }
   handleDialogDelete(){
-      console.log('should delete', this.state.subobjects);
+      // console.log('should delete', this.state.subobjects);
       var ctx = this;
       ctx.setState({'deletionComplete': false});
       ctx.deleteFile();

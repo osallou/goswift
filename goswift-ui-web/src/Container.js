@@ -25,7 +25,7 @@ export class Container {
         }
     }
     static listContainerDirectory(url, filepath, callback){
-        console.log('listContainerDirectory');
+        // console.log('listContainerDirectory');
         var authData = Auth.getAuthData();
         $.ajax({
             url: url + '?format=json&prefix=' + encodeURIComponent(filepath)+'&delimiter=%2F',
@@ -47,7 +47,7 @@ export class Container {
                     if(file.name !== filepath) {
                         files.push(file);
                     }
-                    console.log(file);
+                    // console.log(file);
                 }
                 callback(files);
             },

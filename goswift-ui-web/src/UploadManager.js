@@ -29,13 +29,13 @@ class UploadHandler {
                   if (myXhr.upload) {
                       // For handling the progress of the upload
                       myXhr.upload.addEventListener('progress', function(e) {
-                          console.log('progress', e);
+                          // console.log('progress', e);
                           if (e.lengthComputable) {
                               file_to_upload.progress = (e.loaded * 100 / e.total);
                           }
                       } , false);
                       myXhr.upload.addEventListener('load', function(e) {
-                          console.log('upload completed', e);
+                          // console.log('upload completed', e);
                           file_to_upload.complete = true;
                           if(this.complete_callback){
                             this.complete_callback(file_to_upload);

@@ -65,7 +65,6 @@ export class Auth {
     }
     static isAdmin(){
         var token = localStorage.getItem('goswift-admin');
-        console.log('isAdmin', token);
         if(token === undefined || token === null || token === 'false' || token === false){
             return false;
         }

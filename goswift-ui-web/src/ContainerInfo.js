@@ -38,14 +38,14 @@ class ContainerInfo extends Component {
         var ctx = this;
         if(nextProps.dialog && nextProps.file !== undefined && nextProps.file!=null){
             Container.getContainerMeta(nextProps.file, function(res){
-                console.log('container metas', res);
+                // console.log('container metas', res);
                 if(res.error === undefined){
                     ctx.setState({
                         'container': nextProps.file,
                         'dialog': nextProps.dialog,
                         'metas': res,
                     });
-                    console.log('set metas',res,nextProps.dialog);
+                    // console.log('set metas',res,nextProps.dialog);
                 }
             });
         }

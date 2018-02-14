@@ -33,7 +33,7 @@ class ContainerFileInfo extends Component {
           // get container object details
           var ctx = this;
           Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
-              console.log(res);
+              // console.log(res);
               if(res.about.content_length){
                   ctx.state.file.bytes = res.about.content_length;
               }
@@ -42,11 +42,11 @@ class ContainerFileInfo extends Component {
       };
 
       componentWillReceiveProps(nextProps){
-        console.log('new container file info props', nextProps);
+        // console.log('new container file info props', nextProps);
         var ctx = this;
         if(nextProps.file !== undefined){
             Container.metaContainerFile(this.state.swift_url, this.state.file.name, function(res){
-                console.log(res);
+                // console.log(res);
                 if(res.about.content_length){
                     nextProps.file.bytes = res.about.content_length;
                 }
@@ -67,7 +67,7 @@ class ContainerFileInfo extends Component {
       }
   }
   handleDialogSave(){
-      console.log('should update meta info');
+      // console.log('should update meta info');
       var ctx = this;
       Container.updateMetadataContainerFile(this.state.swift_url, this.state.file.name, this.state.metas, function(msg){
           if(msg.error){

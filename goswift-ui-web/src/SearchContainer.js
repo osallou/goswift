@@ -42,7 +42,7 @@ class SearchContainer extends Component {
     searchFiles(){
         var ctx = this;
         return function(){
-            console.log('search', ctx.state.search);
+            // console.log('search', ctx.state.search);
             var authData = Auth.getAuthData();
             var config = Config.getConfig();
             $.ajax({
@@ -55,7 +55,7 @@ class SearchContainer extends Component {
                 data: JSON.stringify({'query': ctx.state.search}),
                 cache: false,
                 success: function(res){
-                    console.log(res);
+                    // console.log(res);
                     ctx.setState({'files': res.hits.hits});
                 },
                 error: function(jqXHR, textStatus, error){
