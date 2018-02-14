@@ -21,8 +21,8 @@ class GoSwiftIndexMiddleware(object):
             return self.app
 
         resp = request.get_response(self.app)
-
-        index_path = '/api/v1/%s/%s/%s' % (account.replace('AUTH_', ''), container, objname)
+        # /api/<apiversion>/index/project/<project>/<container>/<path:filepath>'
+        index_path = '/api/v1/index/project/%s/%s/%s' % (account.replace('AUTH_', ''), container, objname)
 
         headers = {}
         for k, v in request.headers.items():
