@@ -6,3 +6,4 @@ requests
 PyYAML
 humanfriendly
 elasticsearch
+pymongo

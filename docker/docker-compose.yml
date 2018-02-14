@@ -2,7 +2,9 @@ version: '2'
 
 services:
     goswift-mongo:
-        image: mongodb
+        image: mongo
+        volumes:
+            - goswiftmongo:/data/db
 
     goswift-frontend:
         image: osallou/goswift-frontend
@@ -47,4 +49,6 @@ services:
 
 volumes:
   esdata1:
+    driver: local
+  goswiftmongo:
     driver: local
