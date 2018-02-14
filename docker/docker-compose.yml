@@ -9,7 +9,7 @@ services:
     goswift-frontend:
         image: osallou/goswift-frontend
         ports:
-            - "8081:80"
+            - "8080:80"
         environment:
             - REACT_APP_GOSWIFT_BACKEND_URL=${REACT_APP_GOSWIFT_BACKEND_URL}
             - REACT_APP_GOSWIFT_SWITF_URL=${REACT_APP_GOSWIFT_SWITF_URL}
