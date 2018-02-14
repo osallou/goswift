@@ -7,7 +7,7 @@ services:
     goswift-frontend:
         image: osallou/goswift-frontend
         ports:
-            - "8080:80"
+            - "8081:80"
         environment:
             - REACT_APP_GOSWIFT_BACKEND_URL=${REACT_APP_GOSWIFT_BACKEND_URL}
             - REACT_APP_GOSWIFT_SWITF_URL=${REACT_APP_GOSWIFT_SWITF_URL}
@@ -38,3 +38,13 @@ services:
         image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
         environment:
             - discovery.type=single-node
+        ulimits:
+          memlock:
+             soft: -1
+             hard: -1
+        volumes:
+          - esdata1:/usr/share/elastcisearch/data
+
+volumes:
+  esdata1:
+    driver: local
