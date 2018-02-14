@@ -22,7 +22,7 @@ class GoSwiftIndexMiddleware(object):
 
         resp = request.get_response(self.app)
 
-        index_path = '/v1/%s/%s/%s' % (account.replace('AUTH_', ''), container, objname)
+        index_path = '/api/v1/%s/%s/%s' % (account.replace('AUTH_', ''), container, objname)
 
         headers = {}
         for k, v in request.headers.items():
