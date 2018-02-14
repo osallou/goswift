@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Header from './Header';
 import Home from './Home';
 import {Login, Logout} from './Login';
+import Quota from './Quota';
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { Auth } from './Auth';
 
@@ -28,6 +29,7 @@ class App extends Component {
         <Header />
         <Switch>
           <PrivateRoute exact path='/' component={Home}/>
+          <PrivateRoute exact path='/quota' component={Quota}/>
           <Route exact path='/login' component={Login}/>
           <Route exact path='/logout' component={Logout}/>
         </Switch>

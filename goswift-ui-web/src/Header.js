@@ -8,10 +8,12 @@ class Header extends Component {
   render() {
     let login = null;
     let logout = null;
+    let quota_link = null;
     if(! Auth.isAuthenticated()) {
         login = <li className="nav-item"><Link to='/login' className="nav-link">Login</Link></li>;
     }
     else {
+        quota_link = <li className="nav-item"><Link to='/quota' className="nav-link">Quotas</Link></li>
         logout = <li className="nav-item"><Link to='/logout' className="nav-link">Logout</Link></li>
     }
     return (
@@ -27,6 +29,7 @@ class Header extends Component {
                   <Link to='/' className="navbar-brand">Home</Link>
                 </li>
                 { login }
+                { quota_link }
                 { logout }
               </ul>
             </div>

@@ -1,8 +1,8 @@
 debug: true
 
-salt_secret: 'xyz' # unique secret used to hash projects to generate tmpurls
+host_href: 'http://localhost'
 
-host_href: null
+salt_secret: '12345'
 
 listen:
   ip: '0.0.0.0'
@@ -11,19 +11,23 @@ tls:
   cert: null
   key: null
 
+mongo:
+  url: 'mongodb://localhost:27017'
+  db: 'goswift'
+
 swift:
-    keystone_url: null # 'https://x.y.zg/v3'
-    swift_url: null # 'https://x.y.z' without /v1
+    keystone_url: 'https://genostack-api-keystone.genouest.org/v3'
+    swift_url: 'https://genostack-api-swift.genouest.org'
     admin:
-        os_user_id: null
-        os_user_password: null
-        os_user_project: null
-        os_user_domain: null
+        os_user_id: 'XXX'
+        os_user_password: 'YYYY'
+        os_user_project: 'ZZZZ'
+        os_user_domain: 'Users'
     defaults:
         domain: 'Users'
-    quotas: '1G'
+    quotas: '1GB' # Quotas in bytes, human readable
 
 elastic:
     hosts:
-      - 'localhost'
+    #  - 'localhost'
     index: 'goswift'

@@ -12,6 +12,10 @@ import crypt
 
 import humanfriendly
 
+import pymongo
+from pymongo import MongoClient
+from pymongo import DESCENDING as pyDESCENDING
+
 from flask import Flask
 from flask import jsonify
 from flask import request
@@ -88,6 +92,11 @@ if config['elastic']['hosts']:
         sniffer_timeout=60
     )
     es.indices.create(index=config['elastic']['index'], ignore=400)
+
+mongo = MongoClient(config['mongo']['url'])
+mongo_db = mongo[config['mongo']['db']]
+db_quota = mongo_db.quotas
+
 
 def _get_base_url_from_request():
     if not config['host_href'] and hasattr(request, 'url'):
@@ -339,7 +348,11 @@ def get_project_containers(apiversion, project):
     if r.status_code not in [200]:
         abort(r.status_code)
     url = config['swift']['swift_url'] + '/v1/AUTH_' + str(project)
-    return jsonify({'containers': r.json(), 'swift_url': url, 'quota': int(humanfriendly.parse_size(config['swift']['quotas']))})
+    quota_value = int(humanfriendly.parse_size(config['swift']['quotas'], binary=True))
+    quota = db_quota.find_one({'id': project})
+    if quota:
+        quota_value = quota['quota']
+    return jsonify({'containers': r.json(), 'swift_url': url, 'quota': quota_value})
 
 
 @app.route('/api/<apiversion>/cors/<project>/<container>', methods=['POST'])
@@ -366,6 +379,8 @@ def create_project_containers(apiversion, project, container):
     if r.status_code not in [201, 202]:
         abort(r.status_code)
 
+    __set_quotas(project)
+    '''
     # Set quota for user project
     if config['swift']['quotas']:
         admin_token = get_token({
@@ -384,6 +399,7 @@ def create_project_containers(apiversion, project, container):
             if r.status_code not in [200, 204]:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
                 #abort(r.status_code)
+    '''
 
     # Set CORS for container
     headers = {
@@ -458,6 +474,8 @@ def get_project_container(apiversion, project, container):
 
     # Set quota for user project
     '''
+    __set_quotas(project)
+    '''
     if config['swift']['quotas']:
         admin_token = get_token({
             'user': config['swift']['admin']['os_user_id'],
@@ -475,6 +493,7 @@ def get_project_container(apiversion, project, container):
             if r.status_code not in [200, 204]:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
                 #abort(r.status_code)
+    '''
 
     # Set CORS for container
     headers = {
@@ -529,7 +548,6 @@ def search_index_container(apiversion, project, container):
         abort(r.status_code)
     data = request.get_json()
     # data['query'] : Lucene syntax
-    logging.error("###"+str(data))
     res = None
     try:
         res = es.search(index=config['elastic']['index'] + '-' + project, q=data['query'], size=1000)
@@ -540,7 +558,20 @@ def search_index_container(apiversion, project, container):
 
 
 def __set_quotas(project):
-    if config['swift']['quotas']:
+    project_quota = humanfriendly.parse_size(config['swift']['quotas'], binary=True)
+
+    for i in range(5):
+        try:
+            quota = db_quota.find_one({'id': project})
+            if quota:
+                project_quota = quota['quota']
+            break
+        except pymongo.errors.AutoReconnect:
+            logger.warn('Mongo:AutoReconnect')
+            time.sleep(pow(2, i))
+
+    logging.debug('Set quota for project %s at %s' % (project, str(project_quota)))
+    if project_quota:
         admin_token = get_token({
             'user': config['swift']['admin']['os_user_id'],
             'password': config['swift']['admin']['os_user_password'],
@@ -551,11 +582,52 @@ def __set_quotas(project):
         if admin_token:
             headers = {
                 'X-Auth-Token': admin_token,
-                'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
+                'X-Account-Meta-Quota-Bytes': str(project_quota)
             }
             r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
             if r.status_code not in [200, 204]:
                 logging.error('Quota error for ' + str(project) + ':' + r.text)
+
+def compare_name(a):
+    return a['name']
+
+@app.route('/api/<apiversion>/quota', methods=['GET'])
+def get_projects_quota(apiversion):
+    projects = []
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token']
+    }
+    ks_url = config['swift']['keystone_url'] + '/projects'
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    ks_projects = r.json()['projects']
+
+    quotas = db_quota.find()
+    quotas_map = {}
+    for quota in quotas:
+        quotas_map[quota['id']] = quota['quota']
+        # projects.append({'id': quota['id'], 'name': project_map[quota['id']], 'quota': quota['quota']})
+    for project in ks_projects:
+        if project['id'] in quotas_map:
+            project['quota'] = quotas_map[project['id']]
+        else:
+            project['quota'] = humanfriendly.parse_size(config['swift']['quotas'], binary=True)
+        projects.append({'id': project['id'], 'name': project['name'], 'quota': project['quota']})
+
+    # projects.sort(key=compare_name)
+    return jsonify({'projects': projects})
+
+@app.route('/api/<apiversion>/quota/project/<project>', methods=['POST'])
+def update_project_quota(apiversion, project):
+    data = request.get_json()
+    quota = db_quota.find_one({'id': project})
+    if quota:
+        db_quota.update({'id': project},{'$set': {'quota': humanfriendly.parse_size(data['quota'], binary=True)}})
+    else:
+        db_quota.insert({'id': project, 'quota': humanfriendly.parse_size(data['quota'], binary=True)})
+    __set_quotas(project)
+    return jsonify({'project': project, 'quota': data['quota']})
 
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
