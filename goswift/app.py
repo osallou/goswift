@@ -64,6 +64,13 @@ def override_config():
     if 'GOSWIFT_ELASTIC_HOST' in os.environ and os.environ['GOSWIFT_ELASTIC_HOST']:
         config['elastic']['hosts'] = [os.environ['GOSWIFT_ELASTIC_HOST']]
 
+    if 'GOSWIFT_MONGO_URL' in os.environ and os.environ['GOSWIFT_MONGO_URL']:
+        config['mongo']['url'] = os.environ['GOSWIFT_MONGO_URL']
+
+    if 'GOSWIFT_ADMIN_LIST' in os.environ and os.environ['GOSWIFT_ADMIN_LIST']:
+        admin_list = os.environ['GOSWIFT_ADMIN_LIST']
+        config['admin'] = [x.strip() for x in admin_list.split(',')]
+
 override_config()
 
 if config['debug']:
@@ -331,12 +338,17 @@ def authenticate(apiversion):
         token = r.headers['X-Subject-Token']
         r_json = r.json()
         project_id = r_json['token']['project']['id']
+        is_admin = False
+        if 'roles' in r_json['token']:
+            for role in r_json['token']['roles']:
+                if role['name'] == 'admin':
+                    is_admin = True
 
     except Exception as e:
         logging.exception('Failed to authenticate with Keystone')
         abort(401)
 
-    return jsonify({'token': token, 'project': project_id})
+    return jsonify({'token': token, 'project': project_id, 'is_admin': is_admin})
 
 @app.route('/api/<apiversion>/project/<project>', methods=['GET'])
 @requires_auth
@@ -593,6 +605,20 @@ def compare_name(a):
 
 @app.route('/api/<apiversion>/quota', methods=['GET'])
 def get_projects_quota(apiversion):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Subject-Token': request.headers['X-Auth-Token']
+    }
+    ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    ks_token = r.json()
+    user = ks_token['token']['user']['name']
+    if user not in config['admin']:
+        abort(403)
+
+
     projects = []
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token']
@@ -620,6 +646,19 @@ def get_projects_quota(apiversion):
 
 @app.route('/api/<apiversion>/quota/project/<project>', methods=['POST'])
 def update_project_quota(apiversion, project):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Subject-Token': request.headers['X-Auth-Token']
+    }
+    ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    ks_token = r.json()
+    user = ks_token['user']['name']
+    if user not in config['admin']:
+        abort(403)
+
     data = request.get_json()
     quota = db_quota.find_one({'id': project})
     if quota:

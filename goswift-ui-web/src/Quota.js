@@ -30,7 +30,7 @@ class Quota extends Component {
         // /api/<apiversion>/quota
     }
     changeQuota(event, index, value){
-        console.log(value);
+        console.log("Change quota " + value);
         var ctx = this;
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
@@ -67,6 +67,7 @@ class Quota extends Component {
             dataType: "json",
             success: function(res){
                 // console.log(res.projects);
+                res.projects.sort(function(a,b) {return (a['name'] > b['name']) ? 1 : ((b['name'] > a['name']) ? -1 : 0);} );
                 ctx.setState({'projects': res.projects});
             },
             error: function(jqXHR, textStatus, error){

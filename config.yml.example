@@ -1,5 +1,8 @@
 debug: true
 
+admin:
+  - some_user_admin
+
 host_href: 'http://localhost'
 
 salt_secret: '12345'

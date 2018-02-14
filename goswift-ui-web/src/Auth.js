@@ -2,15 +2,13 @@ import $ from 'jquery';
 import Config from './Config';
 
 export class Auth {
-    static setQuotas(){
-        console.log('should send X-Container-Meta-Quota-Bytes header');
-    }
     static logout(){
         localStorage.removeItem('goswift-token');
         localStorage.removeItem('goswift-project');
+        localStorage.removeItem('goswift-admin');
     }
     static reauth(){
-        console.log('update token')
+        console.log('update token');
         if(!localStorage.getItem('goswift-token') || !localStorage.getItem('goswift-project')){
             return;
         }
@@ -44,10 +42,11 @@ export class Auth {
             success: function(res, textStatus, request){
                 localStorage.setItem('goswift-token', res.token);
                 localStorage.setItem('goswift-project', res.project);
-                Auth.setQuotas();
+                localStorage.setItem('goswift-admin', res.is_admin);
                 callback({'status': true});
             },
             error: function(jqXHR, textStatus, error){
+                console.log('login error:', error);
                 callback({'status': false, 'msg': error});
             }
 
@@ -64,10 +63,17 @@ export class Auth {
             return true;
         }
     }
+    static isAdmin(){
+        var token = localStorage.getItem('goswift-admin');
+        console.log('isAdmin', token);
+        if(token === undefined || token === null || token === 'false' || token === false){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
     static getAuthData(){
-        return {'token': localStorage.getItem('goswift-token'), 'project': localStorage.getItem('goswift-project')};
+        return {'is_admin': localStorage.getItem('goswift-admin'), 'token': localStorage.getItem('goswift-token'), 'project': localStorage.getItem('goswift-project')};
     }
 }
-
-
-//export default Auth;

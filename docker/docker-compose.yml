@@ -1,6 +1,9 @@
 version: '2'
 
 services:
+    goswift-mongo:
+        image: mongodb
+
     goswift-frontend:
         image: osallou/goswift-frontend
         ports:
@@ -28,6 +31,8 @@ services:
             - GOSWIFT_SWIFT_DEFAULTS_DOMAIN=${GOSWIFT_SWIFT_DEFAULTS_DOMAIN}
             - GOSWIFT_SWIFT_QUOTAS=${GOSWIFT_SWIFT_QUOTAS}
             - GOSWIFT_ELASTIC_HOST=goswift-elastic
+            - GOSWIFT_MONGO_URL=mongodb://goswift-mongo:27017
+            - GOSWIFT_ADMIN_LIST=bioinfo
 
     goswift-elastic:
         image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
