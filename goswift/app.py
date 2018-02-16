@@ -74,6 +74,13 @@ def override_config():
         admin_list = os.environ['GOSWIFT_ADMIN_LIST']
         config['admin'] = [x.strip() for x in admin_list.split(',')]
 
+    if 'GOSWIFT_SMTP_HOST' in os.environ and os.environ['GOSWIFT_SMTP_HOST']:
+        config['smtp']['host'] = os.environ['GOSWIFT_SMTP_HOST']
+    if 'GOSWIFT_SMTP_PORT' in os.environ and os.environ['GOSWIFT_SMTP_PORT']:
+        config['smtp']['host'] = int(os.environ['GOSWIFT_SMTP_PORT'])
+    if 'GOSWIFT_SMTP_FROM' in os.environ and os.environ['GOSWIFT_SMTP_FROM']:
+        config['smtp']['from'] = int(os.environ['GOSWIFT_SMTP_FROM'])
+
 override_config()
 
 if config['debug']:

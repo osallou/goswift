@@ -35,6 +35,8 @@ services:
             - GOSWIFT_ELASTIC_HOST=goswift-elastic
             - GOSWIFT_MONGO_URL=mongodb://goswift-mongo:27017
             - GOSWIFT_ADMIN_LIST=bioinfo
+            - GOSWIFT_SMTP_HOST=${GOSWIFT_SMTP_HOST}
+            - GOSWIFT_SMTP_PORT=25
 
     goswift-elastic:
         image: docker.elastic.co/elasticsearch/elasticsearch:6.1.2
