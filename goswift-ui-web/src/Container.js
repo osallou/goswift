@@ -363,4 +363,25 @@ export class Container {
             }
         });
     }
+    static inviteContainer(tmpurl, emails, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/tempurl",
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: JSON.stringify({'url': tmpurl, 'emails': emails}),
+            cache: false,
+            success: function(res){
+                callback({'msg': 'invitation sent'});
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to send invitation: ' + error);
+                callback({'error': error, 'status': jqXHR.status})
+            }
+        });
+    }
 }

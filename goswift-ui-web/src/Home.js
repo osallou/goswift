@@ -11,6 +11,7 @@ import SearchContainer from './SearchContainer';
 import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import InfoIcon from 'material-ui-icons/Info';
+import MailIcon from 'material-ui-icons/Mail';
 import SearchIcon from 'material-ui-icons/Search';
 import DeleteIcon from 'material-ui-icons/Delete';
 // import ActionInfo from 'material-ui/svg-icons/action/info';
@@ -59,7 +60,8 @@ class Home extends Component {
             'containerInfoName': null,
             'search': false,
             'quota': 0,
-            'used': 0
+            'used': 0,
+            'shareUrlEmails': ''
         }
         this.authTimer = null;
         this.uploader = null;
@@ -86,6 +88,8 @@ class Home extends Component {
         this.deleteContainer = this.deleteContainer.bind(this);
         this.handleNotifClose = this.handleNotifClose.bind(this);
         this.handleDialogClose = this.handleDialogClose.bind(this);
+        this.shareUrlInvite = this.shareUrlInvite.bind(this);
+        this.shareUrlUpdateEmails = this.shareUrlUpdateEmails.bind(this);
 
   }
   componentWillUnmount(){
@@ -97,6 +101,36 @@ class Home extends Component {
           Auth.reauth();
       }, 1000 * 60 * 10); // 10 minutes timer
   };
+
+  shareUrlInvite(url){
+      var ctx = this;
+      var tmpurl = url;
+      return function(){
+        var invites = ctx.state.shareUrlEmails.split(',').map(function(item) {
+            return item.trim();
+        });
+        Container.inviteContainer(tmpurl, invites, function(msg){
+            if(msg.error !== undefined){
+                ctx.setState({
+                        'notif': true,
+                        'notif_msg': 'Failed to send invitation',
+                });
+            }
+            else{
+                ctx.setState({
+                        'notif': true,
+                        'notif_msg': 'Invitation sent',
+                });
+            }
+        })
+      }
+  }
+  shareUrlUpdateEmails(event){
+      var ctx = this;
+      return function(event){
+        ctx.setState({'shareUrlEmails': event.target.value});
+      }
+  }
   searchFiles(){
       var ctx = this;
       return function(){
@@ -508,7 +542,22 @@ class Home extends Component {
               open={this.state.dialog}
               onRequestClose={this.handleDialogClose}
             >
-              {this.state.dialog_msg}
+              <span className="shareUrl">{this.state.dialog_msg}</span>
+              <div className="shareInvitations">
+              <h4>Send invitation</h4>
+              <TextField
+                  floatingLabelText="emails, comma separated"
+                  name="shareUrlEmails"
+                  onChange={this.shareUrlUpdateEmails()}
+                  value={this.state.shareUrlEmails}
+                  />
+                  <RaisedButton
+                   primary={true}
+                   onClick={this.shareUrlInvite(this.state.dialog_msg)}
+                   label="Invite"
+                   icon={<MailIcon/>}
+                   />
+              </div>
             </Dialog>
 
             <Table >

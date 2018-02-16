@@ -23,7 +23,6 @@ export class Auth {
             success: function(res, textStatus, request){
                 localStorage.setItem('goswift-token', res.token);
                 localStorage.setItem('goswift-project', res.project);
-                Auth.setQuotas();
             },
             error: function(jqXHR, textStatus, error){
                 console.log('failed to reauth', error);

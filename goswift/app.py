@@ -10,6 +10,9 @@ from hashlib import sha1
 from time import time
 import crypt
 
+import smtplib
+from email.message import EmailMessage
+
 import humanfriendly
 
 import pymongo
@@ -444,7 +447,7 @@ def download_via_tempurl(apiversion, project, container, filepath):
     method = request.args.get('method', 'GET')
     duration_in_seconds = 3600 * 24 * 30 # 30 days
     expires = int(time() + duration_in_seconds)
-    path = '/v1/AUTH_' + project + '/' + container + '/' + str(filepath)
+    path = '/v1/AUTH_' + project + '/' + container + '/' + urllib.parse.quote(str(filepath))
     key = crypt.crypt(project,'$6$' + config['salt_secret']).encode('utf-8')
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
@@ -655,7 +658,7 @@ def update_project_quota(apiversion, project):
     if not r.status_code == 200:
         abort(r.status_code)
     ks_token = r.json()
-    user = ks_token['user']['name']
+    user = ks_token['token']['user']['name']
     if user not in config['admin']:
         abort(403)
 
@@ -670,6 +673,7 @@ def update_project_quota(apiversion, project):
 
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
+    logging.info("New document:"+str(project)+":"+str(container)+":"+filepath)
     __set_quotas(project)
     if not es:
         abort(403)
@@ -697,6 +701,35 @@ def update_index_container(apiversion, project, container, filepath):
     return jsonify({'msg': 'ok'})
 
 
+@app.route('/api/<apiversion>/tempurl', methods=['POST'])
+@requires_auth
+def send_tmpurl_email(apiversion):
+    data = request.get_json()
+    if not config['smtp']['host'] or not data.get('emails', None):
+        abort(403)
+
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Subject-Token': request.headers['X-Auth-Token']
+    }
+    ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    ks_token = r.json()
+    user = ks_token['token']['user']['name']
+
+    msg = EmailMessage()
+    msg.set_content(config['smtp']['share']['msg'].replace('#USER', user).replace('#URL', data['url']))
+    msg['Subject'] = config['smtp']['share']['subject'].replace('#USER', user)
+    msg['From'] = config['smtp']['from']
+    msg['To'] = ','.join(data['emails'])
+
+    # Send the message via our own SMTP server.
+    s = smtplib.SMTP(host=config['smtp']['host'], port=config['smtp']['port'])
+    s.send_message(msg)
+    s.quit()
+    return jsonify({'msg': 'invitation sent'})
 
 if __name__ == "__main__":
     context = None
