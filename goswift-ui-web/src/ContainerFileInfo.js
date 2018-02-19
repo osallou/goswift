@@ -8,6 +8,7 @@ import { Container } from './Container';
 import FlatButton from 'material-ui/FlatButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
+import { Auth } from './Auth';
 // import { GridList, GridTile } from 'material-ui/GridList';
 // import AddIcon from 'material-ui-icons/Add';
 
@@ -21,13 +22,16 @@ class ContainerFileInfo extends Component {
               'dialog': props.dialog || false,
               'onClose': props.onClose,
               'newMetaName': '',
-              'error': ''
+              'error': '',
+              'bucket': props.bucket
           }
+          this.project = Auth.getAuthData().project;
           this.handleDialogClose = this.handleDialogClose.bind(this);
           this.handleDialogSave = this.handleDialogSave.bind(this);
           this.addMeta = this.addMeta.bind(this);
           this.changeNewMetaName = this.changeNewMetaName.bind(this);
           this.onMetaChange = this.onMetaChange.bind(this);
+          this.callHook = this.callHook.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -54,7 +58,8 @@ class ContainerFileInfo extends Component {
                     'file': nextProps.file,
                     'dialog': nextProps.dialog,
                     'metas': res.meta,
-                    'swift_url': nextProps.swift_url
+                    'swift_url': nextProps.swift_url,
+                    'bucket': nextProps.bucket
                 });
             });
         }
@@ -81,6 +86,19 @@ class ContainerFileInfo extends Component {
           }
 
       });
+  }
+  callHook(){
+      var ctx = this;
+      return function(){
+          Container.testContainerHook(ctx.state.bucket, ctx.state.file.name, function(res){
+              if(res.error){
+                  ctx.setState({'error': res.error});
+              }
+              else {
+                  ctx.setState({'error': res.msg + ": " + res.res})
+              }
+          });
+      }
   }
   addMeta(){
       var ctx = this;
@@ -146,6 +164,14 @@ class ContainerFileInfo extends Component {
             { this.state.error && <div class="label label-error">{this.state.error}</div>}
             <div className="row">
                 <div className="col-sm-6">
+                <RaisedButton secondary={true} label="Trigger hook" onClick={this.callHook()} />
+                <div className="field-line" >
+                    <TextField
+                        floatingLabelText="bucket"
+                        name="bucket"
+                        value={this.state.bucket}
+                        disabled={true}/>
+                </div>
                     <div className="field-line" >
                         <TextField
                             floatingLabelText="Last modified"

@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 // import num from 'pretty-bytes';
+import { Auth } from './Auth';
 import { Card, CardText, CardHeader } from 'material-ui/Card';
 import Dialog from 'material-ui/Dialog';
 import { Container } from './Container';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import { GridList, GridTile } from 'material-ui/GridList';
-
+import RaisedButton from 'material-ui/RaisedButton';
 
 class ContainerInfo extends Component {
     constructor(props) {
@@ -15,10 +16,14 @@ class ContainerInfo extends Component {
               'container': props.container,
               'metas': [],
               'dialog': props.dialog || false,
-              'onClose': props.onClose
+              'onClose': props.onClose,
+              'web_hook': ''
           }
+          this.project = Auth.getAuthData().project;
           this.handleDialogClose = this.handleDialogClose.bind(this);
           this.handleDialogSave = this.handleDialogSave.bind(this);
+          this.setHook = this.setHook.bind(this);
+          this.updateHook = this.updateHook.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -29,7 +34,16 @@ class ContainerInfo extends Component {
                       console.log('failed to get container', res);
                       return;
                   }
-                  ctx.setState({'metas': res});
+                  ctx.setState('metas': res);
+              });
+              Container.getContainerHook(this.state.container, function(res){
+                  if(res.error !== undefined) {
+                      console.log('failed to get container hook', res);
+                      return;
+                  }
+                  if(res.hook){
+                      ctx.setState({'web_hook': res.hook});
+                  }
               });
           }
       };
@@ -43,12 +57,38 @@ class ContainerInfo extends Component {
                     ctx.setState({
                         'container': nextProps.file,
                         'dialog': nextProps.dialog,
-                        'metas': res,
+                        'metas': res
                     });
                     // console.log('set metas',res,nextProps.dialog);
                 }
             });
+            Container.getContainerHook(this.state.container, function(res){
+                if(res.error !== undefined) {
+                    console.log('failed to get container hook', res);
+                    return;
+                }
+                if(res.hook){
+                    ctx.setState({'web_hook': res.hook});
+                }
+            });
         }
+      }
+  setHook(){
+        var ctx = this;
+        return function(){
+              Container.setContainerHook(ctx.state.container, ctx.state.web_hook, function(res){
+                  if(res.error !== undefined) {
+                      console.log('failed to set container hook', res);
+                      return;
+                  }
+              });
+        };
+      }
+  updateHook(event){
+          var ctx = this;
+          return function(event){
+            ctx.setState({'web_hook': event.target.value});
+          }
       }
 
   handleDialogClose(){
@@ -84,8 +124,20 @@ class ContainerInfo extends Component {
           onRequestClose={this.handleDialogClose}
         >
             <Card className="container">
-                <CardHeader title="Information"></CardHeader>
+                <CardHeader title="Information">Project {this.project}</CardHeader>
                 <CardText>
+                    <TextField
+                        floatingLabelText="web hook"
+                        name="web_hook"
+                        value={this.state.web_hook}
+                        onChange={this.updateHook()}
+                        />
+                    <RaisedButton
+                          label="Save"
+                          primary={true}
+                          keyboardFocused={true}
+                          onClick={this.setHook()}
+                    />
                     <GridList>
                         {this.state.metas.map((meta, index) =>(
                             <GridTile key={meta.name}>

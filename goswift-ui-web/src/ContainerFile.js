@@ -174,6 +174,7 @@ class ContainerFile extends Component {
         {this.state.showDetails &&
             <ContainerFileInfo
             file={this.state.file}
+            bucket={this.state.bucket}
             onClose={this.closeInfo}
             swift_url={this.state.swift_url}
             dialog={this.state.showDetails}/>

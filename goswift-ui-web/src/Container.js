@@ -159,6 +159,76 @@ export class Container {
             }
         });
     }
+
+    static getContainerHook(bucket, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/hook/" + authData.project + '/' + bucket,
+            // url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            dataType: "json",
+            cache: false,
+            success: function(res){
+                //callback({'status': true});
+                //var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
+                callback({'hook': res.hook});
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to get container hook: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
+            }
+        });
+    }
+
+    static testContainerHook(bucket, filepath, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/hook/" + authData.project + '/' + bucket + '/' + encodeURIComponent(filepath),
+            // url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "POST",
+            dataType: "json",
+            cache: false,
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to test container hook: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
+            }
+        });
+    }
+
+    static setContainerHook(bucket, hook, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/hook/" + authData.project + '/' + bucket,
+            // url: config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket +'?format=json&path=&delimiter=/&prefix=',
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({'url': hook}),
+            cache: false,
+            success: function(res){
+                //callback({'status': true});
+                //var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
+                callback({'hook': res.hook});
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to get container hook: ' + error);
+                callback({'error': error, 'status': jqXHR.status});
+            }
+        });
+    }
+
     static getContainerMeta(bucket, callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();

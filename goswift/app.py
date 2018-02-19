@@ -113,6 +113,7 @@ if config['elastic']['hosts']:
 mongo = MongoClient(config['mongo']['url'])
 mongo_db = mongo[config['mongo']['db']]
 db_quota = mongo_db.quotas
+db_hooks = mongo_db.hooks
 
 
 def _get_base_url_from_request():
@@ -436,6 +437,25 @@ def create_project_containers(apiversion, project, container):
     return jsonify({'msg': 'container created'})
 
 
+def get_tempurl(token, method, project, container, filepath):
+    duration_in_seconds = 3600 * 24 * 30 # 30 days
+    expires = int(time() + duration_in_seconds)
+    path = '/v1/AUTH_' + project + '/' + container + '/' + str(filepath)
+    url_path = '/v1/AUTH_' + project + '/' + container + '/' + urllib.parse.quote(str(filepath))
+    key = crypt.crypt(project,'$6$' + config['salt_secret']).encode('utf-8')
+    headers = {
+        'X-Auth-Token': token,
+        'X-Account-Meta-Temp-URL-Key': key,
+    }
+    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
+    if not r.status_code == 204:
+        return None
+    hmac_body = '%s\n%s\n%s' % (method, expires, path)
+    sig = hmac.new(key, hmac_body.encode('utf-8'), sha1).hexdigest()
+    s = '{host}/{path}?temp_url_sig={sig}&temp_url_expires={expires}'
+    tmpurl = s.format(host=config['swift']['swift_url'], path=url_path, sig=sig, expires=expires)
+    return tmpurl
+
 @app.route('/api/<apiversion>/project/<project>/<container>/<path:filepath>', methods=['GET'])
 @requires_auth
 def download_via_tempurl(apiversion, project, container, filepath):
@@ -452,21 +472,10 @@ def download_via_tempurl(apiversion, project, container, filepath):
         abort(403)
 
     method = request.args.get('method', 'GET')
-    duration_in_seconds = 3600 * 24 * 30 # 30 days
-    expires = int(time() + duration_in_seconds)
-    path = '/v1/AUTH_' + project + '/' + container + '/' + urllib.parse.quote(str(filepath))
-    key = crypt.crypt(project,'$6$' + config['salt_secret']).encode('utf-8')
-    headers = {
-        'X-Auth-Token': request.headers['X-Auth-Token'],
-        'X-Account-Meta-Temp-URL-Key': key,
-    }
-    r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
-    if not r.status_code == 204:
+    token = request.headers['X-Auth-Token']
+    tmpurl = get_tempurl(token, method, project, container, filepath)
+    if not tmpurl:
         abort(500)
-    hmac_body = '%s\n%s\n%s' % (method, expires, path)
-    sig = hmac.new(key, hmac_body.encode('utf-8'), sha1).hexdigest()
-    s = '{host}/{path}?temp_url_sig={sig}&temp_url_expires={expires}'
-    tmpurl = s.format(host=config['swift']['swift_url'], path=path, sig=sig, expires=expires)
     return jsonify({'url': tmpurl})
 
 
@@ -678,15 +687,54 @@ def update_project_quota(apiversion, project):
     __set_quotas(project)
     return jsonify({'project': project, 'quota': data['quota']})
 
+
+def run_hook(request, project, container, filepath):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    result = True
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    # Hooks
+    hook = db_hooks.find_one({'project': project, 'bucket': container})
+    if hook:
+        token = request.headers['X-Auth-Token']
+        method = request.args.get('method')
+        tmpurl = get_tempurl(token, method, project, container, filepath)
+        data = {
+            'bucket': container,
+            'path': tmpurl,
+            'orig_path': filepath
+        }
+        try:
+            requests.post(hook['url'], headers=headers, json=data)
+        except Exception as e:
+            logging.exception('Failed to send hook notification: ' + str(hook['url']))
+            result = False
+    else:
+        result = None
+    return result
+
+
+@app.route('/api/<apiversion>/hook/<project>/<container>/<path:filepath>', methods=['POST'])
+def test_hook_container(apiversion, project, container, filepath):
+    res = run_hook(request, project, container, filepath)
+    return jsonify({'msg': 'called hook', 'res': res})
+
+
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
     logging.info("New document:"+str(project)+":"+str(container)+":"+filepath)
     __set_quotas(project)
-    if not es:
-        abort(403)
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
+    run_hook(request, project, container, filepath)
+
+    if not es:
+        abort(403)
+
     r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
@@ -737,6 +785,43 @@ def send_tmpurl_email(apiversion):
     s.send_message(msg)
     s.quit()
     return jsonify({'msg': 'invitation sent'})
+
+
+@app.route('/api/<apiversion>/hook/<project>/<bucket>', methods=['GET'])
+@requires_auth
+def get_hook(apiversion, project,bucket):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
+    if r.status_code not in [200]:
+        abort(r.status_code)
+    hook = db_hooks.find_one({'project': project, 'bucket': bucket})
+    url = None
+    if hook:
+        url = hook['url']
+    return jsonify({'hook': url})
+
+
+@app.route('/api/<apiversion>/hook/<project>/<bucket>', methods=['POST'])
+@requires_auth
+def set_hook(apiversion, project,bucket):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
+    if r.status_code not in [200]:
+        abort(r.status_code)
+    data = request.get_json()
+    hook = db_hooks.find_one({'project': project, 'bucket': bucket})
+
+    if hook:
+        db_hooks.update({'project': project, 'bucket': bucket},{'$set': {'url': data['url']}})
+    else:
+        db_hooks.insert({'project': project, 'bucket': bucket, 'url': data['url']})
+
+    return jsonify({'hook': data['url']})
+
 
 if __name__ == "__main__":
     context = None
