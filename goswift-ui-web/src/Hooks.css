@@ -1,0 +1,6 @@
+.hookSuccess {
+    color: green !important;
+}
+.hookFailure {
+    color: red !important;
+}

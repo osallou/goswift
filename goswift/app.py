@@ -9,6 +9,7 @@ import hmac
 from hashlib import sha1
 from time import time
 import crypt
+import uuid
 
 import smtplib
 from email.message import EmailMessage
@@ -81,6 +82,9 @@ def override_config():
     if 'GOSWIFT_SMTP_FROM' in os.environ and os.environ['GOSWIFT_SMTP_FROM']:
         config['smtp']['from'] = int(os.environ['GOSWIFT_SMTP_FROM'])
 
+    if 'GOSWIFT_HOST_HREF' in os.environ and os.environ['GOSWIFT_HOST_HREF']:
+        config['host_href'] = int(os.environ['GOSWIFT_HOST_HREF'])
+
 override_config()
 
 if config['debug']:
@@ -114,6 +118,7 @@ mongo = MongoClient(config['mongo']['url'])
 mongo_db = mongo[config['mongo']['db']]
 db_quota = mongo_db.quotas
 db_hooks = mongo_db.hooks
+db_hook = mongo_db.hook
 
 
 def _get_base_url_from_request():
@@ -688,7 +693,7 @@ def update_project_quota(apiversion, project):
     return jsonify({'project': project, 'quota': data['quota']})
 
 
-def run_hook(request, project, container, filepath):
+def run_hook(request, project, container, filepath, apiversion='v1'):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
@@ -699,16 +704,26 @@ def run_hook(request, project, container, filepath):
     # Hooks
     hook = db_hooks.find_one({'project': project, 'bucket': container})
     if hook:
+        uid = uuid.uuid4().hex
         token = request.headers['X-Auth-Token']
         method = request.args.get('method')
         tmpurl = get_tempurl(token, method, project, container, filepath)
         data = {
             'bucket': container,
             'path': tmpurl,
-            'orig_path': filepath
+            'orig_path': filepath,
+            'id': uid,
+            'callback': {
+                'success': _get_base_url_from_request() + '/api/' + apiversion + '/hook/' + uid + '/ok',
+                'failure': _get_base_url_from_request() + '/api/' + apiversion + '/hook/' + uid + '/ko'
+            }
         }
         try:
-            requests.post(hook['url'], headers=headers, json=data)
+            res = requests.post(hook['url'], headers=headers, json=data)
+            status = None
+            if not res.status_code == 200:
+                status = False
+            db_hook.insert({'id': uid, 'project': project, 'status': status, 'bucket': container, 'file': filepath})
         except Exception as e:
             logging.exception('Failed to send hook notification: ' + str(hook['url']))
             result = False
@@ -719,7 +734,7 @@ def run_hook(request, project, container, filepath):
 
 @app.route('/api/<apiversion>/hook/<project>/<container>/<path:filepath>', methods=['POST'])
 def test_hook_container(apiversion, project, container, filepath):
-    res = run_hook(request, project, container, filepath)
+    res = run_hook(request, project, container, filepath, apiversion=apiversion)
     return jsonify({'msg': 'called hook', 'res': res})
 
 
@@ -730,7 +745,7 @@ def update_index_container(apiversion, project, container, filepath):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
-    run_hook(request, project, container, filepath)
+    run_hook(request, project, container, filepath, apiversion=apiversion)
 
     if not es:
         abort(403)
@@ -821,6 +836,36 @@ def set_hook(apiversion, project,bucket):
         db_hooks.insert({'project': project, 'bucket': bucket, 'url': data['url']})
 
     return jsonify({'hook': data['url']})
+
+
+@app.route('/api/<apiversion>/hook/<project>', methods=['GET'])
+@requires_auth
+def get_hook_status(apiversion, project):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+    }
+    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) +'?format=json', headers=headers)
+    if r.status_code not in [200]:
+        abort(r.status_code)
+    result = []
+    hooks = db_hook.find({'project': project}).sort([('_id', pymongo.DESCENDING)]).limit(500)
+    for hook in hooks:
+        del hook['_id']
+        result.append(hook)
+    return jsonify({'hooks': result})
+
+
+@app.route('/api/<apiversion>/hook/<hookid>/<status>', methods=['POST'])
+def set_hook_status(apiversion, hookid, status):
+    '''
+    Status can be set to 0,ko,false for failure, other is considered as success
+    '''
+    data = request.get_json()
+    hook_status = True
+    if status.lower() in ['0', 'ko', 'false']:
+        hook_status = False
+    db_hook.update({'id': hookid},{'$set': {'status': hook_status, 'info': data}})
+    return jsonify({'status': status})
 
 
 if __name__ == "__main__":

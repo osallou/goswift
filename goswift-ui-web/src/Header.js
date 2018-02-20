@@ -9,6 +9,7 @@ class Header extends Component {
     let login = null;
     let logout = null;
     let quota_link = null;
+    let hooks_link = null;
     if(! Auth.isAuthenticated()) {
         login = <li className="nav-item"><Link to='/login' className="nav-link">Login</Link></li>;
     }
@@ -16,6 +17,7 @@ class Header extends Component {
         if(Auth.isAdmin() === true) {
         quota_link = <li className="nav-item"><Link to='/quota' className="nav-link">Quotas</Link></li>
         }
+        hooks_link = <li className="nav-item"><Link to='/hooks' className="nav-link">Hooks</Link></li>
         logout = <li className="nav-item"><Link to='/logout' className="nav-link">Logout</Link></li>
     }
     return (
@@ -31,6 +33,7 @@ class Header extends Component {
                   <Link to='/' className="navbar-brand">Home</Link>
                 </li>
                 { login }
+                { hooks_link }
                 { quota_link }
                 { logout }
               </ul>

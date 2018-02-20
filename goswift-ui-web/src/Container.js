@@ -160,6 +160,29 @@ export class Container {
         });
     }
 
+    static getHookStatus(callback){
+         // /api/<apiversion>/hook/<project>
+         var authData = Auth.getAuthData();
+         var config = Config.getConfig();
+         $.ajax({
+             url: config.url + "/api/v1/hook/" + authData.project,
+             beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+             type: "GET",
+             dataType: "json",
+             cache: false,
+             success: function(res){
+                 //callback({'status': true});
+                 //var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
+                 callback(res);
+             },
+             error: function(jqXHR, textStatus, error){
+                 if(Container.hasExpired(jqXHR.status)){return;}
+                 console.log('Failed to get hook status: ' + error);
+                 callback({'error': error, 'status': jqXHR.status});
+             }
+         });
+    }
+
     static getContainerHook(bucket, callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();

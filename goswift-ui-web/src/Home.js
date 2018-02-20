@@ -29,6 +29,11 @@ import {
 } from 'material-ui/Table';
 import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
+import DropDownMenu from 'material-ui/DropDownMenu';
+import IconButton from 'material-ui/IconButton';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+
 import Divider from 'material-ui/Divider';
 
 import { GridList, GridTile } from 'material-ui/GridList';
@@ -61,7 +66,10 @@ class Home extends Component {
             'search': false,
             'quota': 0,
             'used': 0,
-            'shareUrlEmails': ''
+            'shareUrlEmails': '',
+            'new': '',
+            'typeNew': '',
+            'openNew': false
         }
         this.authTimer = null;
         this.uploader = null;
@@ -91,6 +99,11 @@ class Home extends Component {
         this.shareUrlInvite = this.shareUrlInvite.bind(this);
         this.shareUrlUpdateEmails = this.shareUrlUpdateEmails.bind(this);
 
+        this.changeNew = this.changeNew.bind(this);
+        this.showNew = this.showNew.bind(this);
+        this.handleCancelNew = this.handleCancelNew.bind(this);
+        this.handleCreateNew = this.handleCreateNew.bind(this);
+
   }
   componentWillUnmount(){
       clearInterval(this.authTimer);
@@ -102,6 +115,57 @@ class Home extends Component {
       }, 1000 * 60 * 10); // 10 minutes timer
   };
 
+  changeNew(event){
+      var ctx = this;
+      return function(event){
+        ctx.setState({'new': event.target.value});
+      }
+  }
+  showNew(type){
+      var ctx = this;
+      var eventType = type;
+      return function(){
+        console.log('show new container')
+        ctx.setState({'openNew': true, 'typeNew': eventType});
+      }
+  }
+  handleCancelNew(){
+      this.setState({'openNew': false});
+  }
+  handleCreateNew(){
+      var ctx = this;
+      if(this.state.typeNew == 'container'){
+          if(ctx.state.new === "") {
+              return;
+          }
+          Container.createContainer(ctx.state.new, function(msg){
+              if(msg.error){
+                  ctx.setState({
+                          'notif': true,
+                          'notif_msg': msg.error,
+                  });
+              }
+              else {
+                ctx.setState({'new': ''});
+                ctx.getContainers();
+              }
+          })
+      }
+      else if(this.state.typeNew == 'folder'){
+          if(ctx.state.swift_url === null) {
+              ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'});
+              return;
+          }
+          Container.createDirectory(ctx.state.swift_url, ctx.state.path, ctx.state.new, function(res){
+              ctx.setState({'new': ''});
+              Container.listContainerDirectory(ctx.state.swift_url, ctx.state.path.join(''), function(res){
+                  var files_and_dirs = ctx.get_files_and_dirs(res);
+                  ctx.setState({'files': files_and_dirs.files, 'dirs': files_and_dirs.dirs});
+              });
+          })
+      }
+      this.setState({'openNew': false});
+  }
   shareUrlInvite(url){
       var ctx = this;
       var tmpurl = url;
@@ -425,6 +489,20 @@ class Home extends Component {
               onClick={this.handleDialogClose}
             />,
           ];
+          const actionsNew = [
+            <FlatButton
+              label="Cancel"
+              primary={true}
+              onClick={this.handleCancelNew}
+            />,
+            <FlatButton
+              label="Create"
+              primary={true}
+              keyboardFocused={true}
+              onClick={this.handleCreateNew}
+            />,
+          ];
+
 
     return (
       <div className="row">
@@ -435,19 +513,26 @@ class Home extends Component {
           dialog={this.state.containerInfoDialog}/>
 
         <div className="col-sm-3">
-            <h4>Containers</h4>
+            <Menu disableAutoFocus={true}>
+            <MenuItem
+                key="newcontainer"
+                primaryText="New container"
+                onClick={this.showNew('container')}
+                leftIcon={<CreateNewFolderIcon/>}/>
+            </Menu>
 
             <Menu
                 desktop={true}
                 onItemClick={this.showContainer}
                 disableAutoFocus={true}
             >
+
             {this.state.containers.map((container, index) => (
                 <MenuItem
                     key={container.name}
                     primaryText={container.name}
                     value={container.name}
-                    rightIcon={<InfoIcon onClick={this.showContainerInfo(container.name)}/>}
+                    leftIcon={<InfoIcon onClick={this.showContainerInfo(container.name)}/>}
                 />
 
             ))}
@@ -459,58 +544,67 @@ class Home extends Component {
                 desktop={true}
                 disableAutoFocus={true}
             >
-            <MenuItem>
-            <TextField
-                floatingLabelText="container name"
-                name="newContainer"
-                onChange={this.changeContainer()}
-                value={this.state.newContainer}/>
-                <CreateNewFolderIcon onClick={this.createContainer()}/>
-            </MenuItem>
             </Menu>
             <Divider />
-
 
 
             <UploadProgress files={this.state.uploads}/>
         </div>
 
+        <Dialog
+          title={"Create new " + this.state.typeNew}
+          actions={actionsNew}
+          modal={false}
+          open={this.state.openNew}
+          onRequestClose={this.handleCancelNew}
+        >
+            <TextField
+                floatingLabelText="name"
+                name="newName"
+                onChange={this.changeNew()}
+                value={this.state.new}/>
+        </Dialog>
+
         { this.state.search && <div className="col-sm"><SearchContainer container={this.state.container}/></div>}
         { !this.state.search && <div className="col-sm">
             { this.state.container &&
-
+            <div>
             <nav className="navbar navbar-light">
               <ol className="breadcrumb">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
               {this.state.path.map((cpath, index) => (
                   <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}
-                   <li key="delete" className="breadcrum-item">
-                   <FlatButton aria-label="Delete" onClick={this.deleteContainer(this.state.container.name)}>
-                     <DeleteIcon />
-                   </FlatButton>
-                   </li>
-
               </ol>
-              <form className="form-inline my-2 my-lg-0">
-                   <TextField
-                  floatingLabelText="Create folder"
-                  name="newFolder"
-                  onChange={this.changeFolder()}
-                  value={this.state.newFolder}/>
-                  <CreateNewFolderIcon onClick={this.createFolder()}/>
-               </form>
-              <form className="form-inline my-2 my-lg-0">
-                  <RaisedButton
-                   primary={true}
-                   onClick={this.searchFiles()}
-                   label="Search"
-                   icon={<SearchIcon/>}
-                   />
-               </form>
 
             </nav>
-
+            <nav className="navbar">
+                <form className="form-inline my-2 my-lg-0">
+                    <RaisedButton
+                     primary={true}
+                     onClick={this.showNew('folder')}
+                     label="Create folder"
+                     icon={<CreateNewFolderIcon/>}
+                     />
+                 </form>
+                <form className="form-inline my-2 my-lg-0">
+                    <RaisedButton
+                     secondary={true}
+                     onClick={this.deleteContainer(this.state.container.name)}
+                     label="Delete container"
+                     icon={<DeleteIcon/>}
+                     />
+                 </form>
+               <form className="form-inline my-2 my-lg-0">
+                   <RaisedButton
+                    primary={true}
+                    onClick={this.searchFiles()}
+                    label="Search"
+                    icon={<SearchIcon/>}
+                    />
+                </form>
+            </nav>
+            </div>
 
 
             }

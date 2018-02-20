@@ -38,11 +38,15 @@ class ContainerInfo extends Component {
               });
               Container.getContainerHook(this.state.container, function(res){
                   if(res.error !== undefined) {
+                      ctx.setState({'web_hook': ''});
                       console.log('failed to get container hook', res);
                       return;
                   }
                   if(res.hook){
                       ctx.setState({'web_hook': res.hook});
+                  }
+                  else{
+                      ctx.setState({'web_hook': ''});
                   }
               });
           }
@@ -64,11 +68,15 @@ class ContainerInfo extends Component {
             });
             Container.getContainerHook(this.state.container, function(res){
                 if(res.error !== undefined) {
+                    ctx.setState({'web_hook': ''});
                     console.log('failed to get container hook', res);
                     return;
                 }
                 if(res.hook){
                     ctx.setState({'web_hook': res.hook});
+                }
+                else {
+                    ctx.setState({'web_hook': ''});
                 }
             });
         }
