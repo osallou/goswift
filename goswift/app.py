@@ -83,7 +83,7 @@ def override_config():
         config['smtp']['from'] = int(os.environ['GOSWIFT_SMTP_FROM'])
 
     if 'GOSWIFT_HOST_HREF' in os.environ and os.environ['GOSWIFT_HOST_HREF']:
-        config['host_href'] = int(os.environ['GOSWIFT_HOST_HREF'])
+        config['host_href'] = os.environ['GOSWIFT_HOST_HREF']
 
 override_config()
 
