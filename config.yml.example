@@ -40,5 +40,5 @@ smtp:
     port: 25
     from: 'support@xxx.org'
     share:
-        subject: "#USER granted you access on out swift server"
+        subject: "#USER granted you access to our swift server"
         msg: "Access has been granted to you by #USER on a swift resource, you can access this resource with this temporary link: #URL"
