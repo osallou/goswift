@@ -78,7 +78,7 @@ def override_config():
     if 'GOSWIFT_SMTP_HOST' in os.environ and os.environ['GOSWIFT_SMTP_HOST']:
         config['smtp']['host'] = os.environ['GOSWIFT_SMTP_HOST']
     if 'GOSWIFT_SMTP_PORT' in os.environ and os.environ['GOSWIFT_SMTP_PORT']:
-        config['smtp']['host'] = int(os.environ['GOSWIFT_SMTP_PORT'])
+        config['smtp']['port'] = int(os.environ['GOSWIFT_SMTP_PORT'])
     if 'GOSWIFT_SMTP_FROM' in os.environ and os.environ['GOSWIFT_SMTP_FROM']:
         config['smtp']['from'] = int(os.environ['GOSWIFT_SMTP_FROM'])
 
