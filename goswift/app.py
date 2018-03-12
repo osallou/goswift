@@ -511,25 +511,6 @@ def get_project_container(apiversion, project, container):
     # Set quota for user project
     '''
     __set_quotas(project)
-    '''
-    if config['swift']['quotas']:
-        admin_token = get_token({
-            'user': config['swift']['admin']['os_user_id'],
-            'password': config['swift']['admin']['os_user_password'],
-            'domain': config['swift']['admin']['os_user_domain'],
-            'project': config['swift']['admin']['os_user_project']
-        })
-
-        if admin_token:
-            headers = {
-                'X-Auth-Token': admin_token,
-                'X-Account-Meta-Quota-Bytes': str(humanfriendly.parse_size(config['swift']['quotas']))
-            }
-            r = requests.post(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) , headers=headers)
-            if r.status_code not in [200, 204]:
-                logging.error('Quota error for ' + str(project) + ':' + r.text)
-                #abort(r.status_code)
-    '''
 
     # Set CORS for container
     headers = {
@@ -541,15 +522,7 @@ def get_project_container(apiversion, project, container):
     if r.status_code != 204:
         abort(r.status_code)
 
-
-    headers = {
-        'X-Auth-Token': request.headers['X-Auth-Token'],
-    }
-    # Get container info
-    r = requests.get(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json&path=&delimiter=%2F' , headers=headers)
-    if r.status_code != 200:
-        abort(r.status_code)
-    return jsonify({'container': r.json(), 'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})
+    return jsonify({'url': config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container})
 
 
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['DELETE'])

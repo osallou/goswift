@@ -334,15 +334,14 @@ class Home extends Component {
              })
              return;
          }
-         var files_and_dirs = ctx.get_files_and_dirs(res.container);
          ctx.setState({
-            'files': files_and_dirs.files,
-            'dirs': files_and_dirs.dirs,
             'swift_url': res.swift_url,
             'container': ctx.state.containers[index],
             'path': [],
             'search': false
-        });
+         });
+         ctx.gotoFolder('');
+
       });
   }
   deleteFile(msg){
