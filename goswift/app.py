@@ -679,7 +679,7 @@ def run_hook(request, project, container, filepath, apiversion='v1'):
     if hook:
         uid = uuid.uuid4().hex
         token = request.headers['X-Auth-Token']
-        method = request.args.get('method')
+        method = request.args.get('method', 'GET')
         tmpurl = get_tempurl(token, method, project, container, filepath)
         data = {
             'bucket': container,
@@ -687,8 +687,8 @@ def run_hook(request, project, container, filepath, apiversion='v1'):
             'orig_path': filepath,
             'id': uid,
             'callback': {
-                'success': _get_base_url_from_request() + '/api/' + apiversion + '/hook/' + uid + '/ok',
-                'failure': _get_base_url_from_request() + '/api/' + apiversion + '/hook/' + uid + '/ko'
+                'success': _get_base_url_from_request() + '/api/' + apiversion + '/hooks/' + uid + '/ok',
+                'failure': _get_base_url_from_request() + '/api/' + apiversion + '/hooks/' + uid + '/ko'
             }
         }
         try:
@@ -828,7 +828,7 @@ def get_hook_status(apiversion, project):
     return jsonify({'hooks': result})
 
 
-@app.route('/api/<apiversion>/hook/<hookid>/<status>', methods=['POST'])
+@app.route('/api/<apiversion>/hooks/<hookid>/<status>', methods=['POST'])
 def set_hook_status(apiversion, hookid, status):
     '''
     Status can be set to 0,ko,false for failure, other is considered as success
