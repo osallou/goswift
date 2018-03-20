@@ -196,7 +196,7 @@ export class Container {
             success: function(res){
                 //callback({'status': true});
                 //var url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket;
-                callback({'hook': res.hook});
+                callback({'hook': res.hook, 'regexp': res.regexp});
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}

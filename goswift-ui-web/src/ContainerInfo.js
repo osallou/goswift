@@ -40,12 +40,12 @@ class ContainerInfo extends Component {
               });
               Container.getContainerHook(this.state.container, function(res){
                   if(res.error !== undefined) {
-                      ctx.setState({'web_hook': ''});
+                      ctx.setState({'web_hook': '', 'hook_regexp': ''});
                       console.log('failed to get container hook', res);
                       return;
                   }
                   if(res.hook){
-                      ctx.setState({'web_hook': res.hook, 'hook_regexp': res.hook_regexp});
+                      ctx.setState({'web_hook': res.hook, 'hook_regexp': res.regexp});
                   }
                   else{
                       ctx.setState({'web_hook': '', 'hook_regexp': ''});
@@ -70,12 +70,13 @@ class ContainerInfo extends Component {
             });
             Container.getContainerHook(this.state.container, function(res){
                 if(res.error !== undefined) {
-                    ctx.setState({'web_hook': ''});
+                    ctx.setState({'web_hook': '', 'hook_regexp': ''});
                     console.log('failed to get container hook', res);
                     return;
                 }
                 if(res.hook){
-                    ctx.setState({'web_hook': res.hook, 'hook_regexp': res.hook_regexp});
+                    console.log(res);
+                    ctx.setState({'web_hook': res.hook, 'hook_regexp': res.regexp});
                 }
                 else {
                     ctx.setState({'web_hook': '', 'hook_regexp': ''});
