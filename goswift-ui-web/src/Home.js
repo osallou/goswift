@@ -29,10 +29,10 @@ import {
 } from 'material-ui/Table';
 import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
-import IconMenu from 'material-ui/IconMenu';
-import DropDownMenu from 'material-ui/DropDownMenu';
-import IconButton from 'material-ui/IconButton';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+// import IconMenu from 'material-ui/IconMenu';
+// import DropDownMenu from 'material-ui/DropDownMenu';
+// import IconButton from 'material-ui/IconButton';
+// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 
 import Divider from 'material-ui/Divider';
 
@@ -134,7 +134,7 @@ class Home extends Component {
   }
   handleCreateNew(){
       var ctx = this;
-      if(this.state.typeNew == 'container'){
+      if(this.state.typeNew === 'container'){
           if(ctx.state.new === "") {
               return;
           }
@@ -151,7 +151,7 @@ class Home extends Component {
               }
           })
       }
-      else if(this.state.typeNew == 'folder'){
+      else if(this.state.typeNew === 'folder'){
           if(ctx.state.swift_url === null) {
               ctx.setState({'notif': true, 'notif_msg': 'Select first a container/bucket'});
               return;

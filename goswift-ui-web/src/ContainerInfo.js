@@ -142,7 +142,7 @@ class ContainerInfo extends Component {
           autoScrollBodyContent={true}
         >
             <Card className="container">
-                <CardHeader title="Information">Project {this.project}</CardHeader>
+                <CardHeader title={'Project: ' +this.project}></CardHeader>
                 <CardText>
                 <GridList cellHeight={80}>
                     <GridTile>

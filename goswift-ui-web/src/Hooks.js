@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import { Auth } from './Auth';
 import Config from './Config';
-import { num } from './Utils';
+
 
 import {
   Table,
@@ -13,8 +13,6 @@ import {
   TableRowColumn,
 } from 'material-ui/Table';
 
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
 
 import CheckCircleIcon from 'material-ui-icons/CheckCircle';
 import ReportProblemIcon from 'material-ui-icons/ReportProblem';
@@ -24,7 +22,7 @@ import './Hooks.css';
 class Hooks extends Component {
     constructor(props){
         super(props);
-        var config = Config.getConfig();
+        // var config = Config.getConfig();
         this.state = {
             'hooks': [],
         };

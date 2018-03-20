@@ -3,7 +3,6 @@ import $ from 'jquery';
 import { Auth } from './Auth';
 import Config from './Config';
 import SearchIcon from 'material-ui-icons/Search';
-import TextField from 'material-ui/TextField';
 import Chip from 'material-ui/Chip';
 
 import {
