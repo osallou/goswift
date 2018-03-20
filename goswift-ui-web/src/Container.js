@@ -227,7 +227,7 @@ export class Container {
         });
     }
 
-    static setContainerHook(bucket, hook, callback){
+    static setContainerHook(bucket, hook, regexp, callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
         $.ajax({
@@ -237,7 +237,7 @@ export class Container {
             type: "POST",
             dataType: "json",
             contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({'url': hook}),
+            data: JSON.stringify({'url': hook, 'regexp': regexp}),
             cache: false,
             success: function(res){
                 //callback({'status': true});

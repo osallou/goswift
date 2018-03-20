@@ -17,13 +17,15 @@ class ContainerInfo extends Component {
               'metas': [],
               'dialog': props.dialog || false,
               'onClose': props.onClose,
-              'web_hook': ''
+              'web_hook': '',
+              'hook_regexp': ''
           }
           this.project = Auth.getAuthData().project;
           this.handleDialogClose = this.handleDialogClose.bind(this);
           this.handleDialogSave = this.handleDialogSave.bind(this);
           this.setHook = this.setHook.bind(this);
           this.updateHook = this.updateHook.bind(this);
+          this.updateHookRegexp = this.updateHookRegexp.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -43,10 +45,10 @@ class ContainerInfo extends Component {
                       return;
                   }
                   if(res.hook){
-                      ctx.setState({'web_hook': res.hook});
+                      ctx.setState({'web_hook': res.hook, 'hook_regexp': res.hook_regexp});
                   }
                   else{
-                      ctx.setState({'web_hook': ''});
+                      ctx.setState({'web_hook': '', 'hook_regexp': ''});
                   }
               });
           }
@@ -73,10 +75,10 @@ class ContainerInfo extends Component {
                     return;
                 }
                 if(res.hook){
-                    ctx.setState({'web_hook': res.hook});
+                    ctx.setState({'web_hook': res.hook, 'hook_regexp': res.hook_regexp});
                 }
                 else {
-                    ctx.setState({'web_hook': ''});
+                    ctx.setState({'web_hook': '', 'hook_regexp': ''});
                 }
             });
         }
@@ -84,7 +86,7 @@ class ContainerInfo extends Component {
   setHook(){
         var ctx = this;
         return function(){
-              Container.setContainerHook(ctx.state.container, ctx.state.web_hook, function(res){
+              Container.setContainerHook(ctx.state.container, ctx.state.web_hook, ctx.state.hook_regexp,function(res){
                   if(res.error !== undefined) {
                       console.log('failed to set container hook', res);
                       return;
@@ -96,6 +98,12 @@ class ContainerInfo extends Component {
           var ctx = this;
           return function(event){
             ctx.setState({'web_hook': event.target.value});
+          }
+      }
+  updateHookRegexp(event){
+          var ctx = this;
+          return function(event){
+            ctx.setState({'hook_regexp': event.target.value});
           }
       }
 
@@ -130,16 +138,29 @@ class ContainerInfo extends Component {
           actions={actions}
           open={this.state.dialog}
           onRequestClose={this.handleDialogClose}
+          autoScrollBodyContent={true}
         >
             <Card className="container">
                 <CardHeader title="Information">Project {this.project}</CardHeader>
                 <CardText>
+                <GridList cellHeight={80}>
+                    <GridTile>
                     <TextField
                         floatingLabelText="web hook"
                         name="web_hook"
                         value={this.state.web_hook}
                         onChange={this.updateHook()}
                         />
+                        </GridTile>
+                        <GridTile>
+                    <TextField
+                        floatingLabelText="web hook regexp"
+                        name="hook_regexp"
+                        value={this.state.hook_regexp}
+                        onChange={this.updateHookRegexp()}
+                        />
+                        </GridTile>
+                    </GridList>
                     <RaisedButton
                           label="Save"
                           primary={true}

@@ -10,6 +10,7 @@ from hashlib import sha1
 from time import time
 import crypt
 import uuid
+import re
 
 import smtplib
 from email.message import EmailMessage
@@ -666,7 +667,7 @@ def update_project_quota(apiversion, project):
     return jsonify({'project': project, 'quota': data['quota']})
 
 
-def run_hook(request, project, container, filepath, apiversion='v1'):
+def run_hook(request, project, container, filepath, apiversion='v1', force=False):
     headers = {
         'X-Auth-Token': request.headers['X-Auth-Token'],
     }
@@ -677,6 +678,9 @@ def run_hook(request, project, container, filepath, apiversion='v1'):
     # Hooks
     hook = db_hooks.find_one({'project': project, 'bucket': container})
     if hook:
+        if not force and 'regexp' in hook and hook['regexp']:
+            if re.match(hook['regexp'], filepath) is None:
+                return None
         uid = uuid.uuid4().hex
         token = request.headers['X-Auth-Token']
         method = request.args.get('method', 'GET')
@@ -707,7 +711,7 @@ def run_hook(request, project, container, filepath, apiversion='v1'):
 
 @app.route('/api/<apiversion>/hook/<project>/<container>/<path:filepath>', methods=['POST'])
 def test_hook_container(apiversion, project, container, filepath):
-    res = run_hook(request, project, container, filepath, apiversion=apiversion)
+    res = run_hook(request, project, container, filepath, apiversion=apiversion, force=True)
     return jsonify({'msg': 'called hook', 'res': res})
 
 
@@ -788,7 +792,9 @@ def get_hook(apiversion, project,bucket):
     url = None
     if hook:
         url = hook['url']
-    return jsonify({'hook': url})
+    if 'regexp' not in hook:
+        hook['regexp'] = ''
+    return jsonify({'hook': url, 'regexp': hook['regexp']})
 
 
 @app.route('/api/<apiversion>/hook/<project>/<bucket>', methods=['POST'])
@@ -804,11 +810,11 @@ def set_hook(apiversion, project,bucket):
     hook = db_hooks.find_one({'project': project, 'bucket': bucket})
 
     if hook:
-        db_hooks.update({'project': project, 'bucket': bucket},{'$set': {'url': data['url']}})
+        db_hooks.update({'project': project, 'bucket': bucket},{'$set': {'url': data['url'], 'regexp': data['regexp']}})
     else:
-        db_hooks.insert({'project': project, 'bucket': bucket, 'url': data['url']})
+        db_hooks.insert({'project': project, 'bucket': bucket, 'url': data['url'], 'regexp': data['regexp']})
 
-    return jsonify({'hook': data['url']})
+    return jsonify({'hook': data['url'], 'regexp': data['regexp']})
 
 
 @app.route('/api/<apiversion>/hook/<project>', methods=['GET'])
