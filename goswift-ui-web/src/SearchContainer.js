@@ -78,7 +78,7 @@ class SearchContainer extends Component {
         <nav className="navbar  navbar-light bg-faded">
                 <ul className="navbar-nav mr-auto">
                   <li className="nav-item active">
-                    <a className="nav-link" href="#"><span>{this.state.container.name}</span></a>
+                    <a className="nav-link" ><span>{this.state.container.name}</span></a>
                  </li>
                  </ul>
                  <form className="form-inline my-2 my-lg-0">

@@ -444,6 +444,8 @@ def create_project_containers(apiversion, project, container):
 
 
 def get_tempurl(token, method, project, container, filepath):
+    if method is None:
+        method = 'GET'
     duration_in_seconds = 3600 * 24 * 30 # 30 days
     expires = int(time() + duration_in_seconds)
     path = '/v1/AUTH_' + project + '/' + container + '/' + str(filepath)
