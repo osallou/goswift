@@ -82,7 +82,7 @@ class SearchContainer extends Component {
                  </li>
                  </ul>
                  <form className="form-inline my-2 my-lg-0">
-                    <input className="form-control mr-sm-2" type="text" placeholder="Search" onChange={this.changeSearch()} value={this.state.search}/>
+                    <input className="form-control mr-sm-2" type="text" placeholder="myfile* *.fasta" onChange={this.changeSearch()} value={this.state.search}/>
                     <SearchIcon onClick={this.searchFiles()}/>
                   </form>
 
