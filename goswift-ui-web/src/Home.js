@@ -103,6 +103,7 @@ class Home extends Component {
         this.showNew = this.showNew.bind(this);
         this.handleCancelNew = this.handleCancelNew.bind(this);
         this.handleCreateNew = this.handleCreateNew.bind(this);
+        this.isContainerSelected = this.isContainerSelected.bind(this);
 
   }
   componentWillUnmount(){
@@ -258,6 +259,14 @@ class Home extends Component {
           ctx.setState({containerInfoDialog: true, containerInfoName: containerName});
       }
   }
+  isContainerSelected(containerName){
+      if(this.state.container && this.state.container.name === containerName){
+          return {"backgroundColor": "lightgrey"};
+      }
+      else {
+          return {};
+      }
+  }
   closeContainerInfo(){
       var ctx = this;
           // console.log('close container info');
@@ -283,7 +292,11 @@ class Home extends Component {
   gotoFolder(folder){
       var ctx = this;
       // console.log('request folder ', folder);
-      var subpath = ctx.state.path.concat(folder);
+
+      var subpath = ctx.state.path;
+      if(folder !== "") {
+          subpath = ctx.state.path.concat(folder);
+      }
       ctx.setState({'path': subpath, 'linearpath': subpath.join('')});
       Container.listContainerDirectory(ctx.state.swift_url, subpath.join(''), function(res){
           // console.log('folder change', folder, res);
@@ -512,13 +525,6 @@ class Home extends Component {
           dialog={this.state.containerInfoDialog}/>
 
         <div className="col-sm-3">
-            <Menu disableAutoFocus={true}>
-            <MenuItem
-                key="newcontainer"
-                primaryText="New container"
-                onClick={this.showNew('container')}
-                leftIcon={<CreateNewFolderIcon/>}/>
-            </Menu>
 
             <Menu
                 desktop={true}
@@ -528,6 +534,7 @@ class Home extends Component {
 
             {this.state.containers.map((container, index) => (
                 <MenuItem
+                    style={this.isContainerSelected(container.name)}
                     key={container.name}
                     primaryText={container.name}
                     value={container.name}
@@ -536,6 +543,25 @@ class Home extends Component {
 
             ))}
             </Menu>
+            <Menu>
+            <RaisedButton
+              key="newcontainer"
+              primary={true}
+              onClick={this.showNew('container')}
+              label="Create container"
+              icon={<CreateNewFolderIcon/>}
+             />
+             </Menu>
+             { this.state.container &&
+                 <Menu>
+                 <RaisedButton
+                  secondary={true}
+                  onClick={this.deleteContainer(this.state.container.name)}
+                  label="Delete container"
+                  icon={<DeleteIcon/>}
+                  /></Menu>
+              }
+
             <Divider />
             <FlatButton primary={true} label={"Quota: " + num(this.state.used) + " / "+ num(this.state.quota)}/>
             <Divider />
@@ -568,15 +594,6 @@ class Home extends Component {
         { !this.state.search && <div className="col-sm">
             { this.state.container &&
             <div>
-            <nav className="navbar navbar-light">
-              <ol className="breadcrumb">
-                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
-              {this.state.path.map((cpath, index) => (
-                  <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
-              ))}
-              </ol>
-
-            </nav>
             <nav className="navbar">
                 <form className="form-inline my-2 my-lg-0">
                     <RaisedButton
@@ -586,14 +603,18 @@ class Home extends Component {
                      icon={<CreateNewFolderIcon/>}
                      />
                  </form>
-                <form className="form-inline my-2 my-lg-0">
-                    <RaisedButton
-                     secondary={true}
-                     onClick={this.deleteContainer(this.state.container.name)}
-                     label="Delete container"
-                     icon={<DeleteIcon/>}
-                     />
+                 { this.state.container &&
+                 <form className="form-inline my-2 my-lg-0">
+                 <UploadZone
+                     swift_url={this.state.swift_url}
+                     path={this.state.path.join()}
+                     onUpload={this.fileUpload}
+                     onProgress={this.fileUploadProgress}
+                     onOver={this.fileUploadOver}
+                     onError={this.fileUploadError}
+                 />
                  </form>
+                }
                <form className="form-inline my-2 my-lg-0">
                    <RaisedButton
                     primary={true}
@@ -603,24 +624,20 @@ class Home extends Component {
                     />
                 </form>
             </nav>
+            <nav className="navbar navbar-light">
+              <ol className="breadcrumb">
+                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
+              {this.state.path.map((cpath, index) => (
+                  <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
+              ))}
+              </ol>
+
+            </nav>
             </div>
 
 
             }
-            { this.state.container &&
-            <GridList cellHeight={120} >
-                <GridTile key="1"  cols={2} title="Upload drop zone">
-                    <UploadZone
-                        swift_url={this.state.swift_url}
-                        path={this.state.path.join()}
-                        onUpload={this.fileUpload}
-                        onProgress={this.fileUploadProgress}
-                        onOver={this.fileUploadOver}
-                        onError={this.fileUploadError}
-                    />
-                </GridTile>
-            </GridList>
-            }
+
             <Divider />
             <Snackbar
                 open={this.state.notif}

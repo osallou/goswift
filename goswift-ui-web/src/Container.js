@@ -340,7 +340,7 @@ export class Container {
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
-                console.log('Failed to delete: ' + error);
+                console.log('Failed to delete: ', error);
                 callback('error': error, 'status': jqXHR.status);
             }
         });
@@ -357,7 +357,10 @@ export class Container {
             },
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
-                console.log('Failed to delete: ' + error);
+                console.log('Failed to delete: ', error);
+                if(error == "Conflict") {
+                    error = "Container must be empty to be deleted";
+                }
                 callback({'error': error, 'status': jqXHR.status});
             }
         });

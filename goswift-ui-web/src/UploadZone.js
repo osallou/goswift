@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 // import $ from 'jquery';
 import Dropzone from 'react-dropzone';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
+import RaisedButton from 'material-ui/RaisedButton';
+
 // import { Auth } from './Auth';
 import { UploadManager } from './UploadManager';
 import './UploadZone.css';
@@ -23,6 +25,7 @@ class UploadZone extends Component {
           this.uploadTimer = null;
           this.timerInterval = 5000;
           this.onDrop = this.onDrop.bind(this);
+          this.onFileUpload = this.onFileUpload.bind(this);
           this.counter = 0;
           // console.log("state", this.state);
           this.manager = new UploadManager(2, function(file){
@@ -161,13 +164,33 @@ class UploadZone extends Component {
           this.uploadFile(accepted[i], i);
       }
   }
+  onFileUpload(e){
+      this.onDrop(e.target.files);
+  }
   render() {
     return (
-        <Dropzone className="UploadZone" onDrop={this.onDrop}>
-            lower than 5Gb, use swiftclient for larger uploads <CloudUploadIcon/>
-        </Dropzone>
+        <div>
+        <div className="upload-btn-wrapper" style={{
+                position: "relative",
+                overflow: "hidden",
+                display: "inline-block"
+            }}>
+            <RaisedButton
+             primary={true}
+             label="Upload file"
+             icon={<CloudUploadIcon/>}
+             />
+            <input onChange={this.onFileUpload} type="file" name="myfile" style={{opacity: 0, position: "absolute", left: 0, top:0}} />
+        </div>
+
+        </div>
     );
   }
 }
+/*
+<Dropzone className="UploadZone" onDrop={this.onDrop}>
+    lower than 5Gb, use swiftclient for larger uploads <CloudUploadIcon/>
+</Dropzone>
+*/
 
 export default UploadZone;
