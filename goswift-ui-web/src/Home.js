@@ -524,7 +524,7 @@ class Home extends Component {
           onClose={this.closeContainerInfo}
           dialog={this.state.containerInfoDialog}/>
 
-        <div className="col-sm-3">
+        <div className="col-sm-3" style={{backgroundColor: "#FAFAFA"}}>
 
             <Menu
                 desktop={true}

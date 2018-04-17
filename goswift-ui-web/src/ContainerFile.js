@@ -186,7 +186,7 @@ class ContainerFile extends Component {
             {!this.isDirectory() && <p>{this.secondaryInfo()}</p>}
         </TableRowColumn>
         <TableRowColumn>
-        {!this.isDirectory() && <InfoIcon onClick={this.showInfo()}/>}
+        {!this.isDirectory() && <IconButton aria-label="Info" onClick={this.showInfo()}><InfoIcon/></IconButton>}
 
         <IconButton aria-label="Delete" onClick={this.deleteFile()}>
           <DeleteIcon />

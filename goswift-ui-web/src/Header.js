@@ -29,12 +29,11 @@ class Header extends Component {
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
               <ul className="navbar-nav mr-auto">
-                <li className="nav-item active">
-                  <Link to='/' className="navbar-brand">Home</Link>
-                </li>
-                { login }
                 { hooks_link }
                 { quota_link }
+              </ul>
+              <ul className="navbar-nav ml-auto">
+                { login }
                 { logout }
               </ul>
             </div>
