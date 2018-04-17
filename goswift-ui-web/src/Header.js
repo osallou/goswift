@@ -28,11 +28,9 @@ class Header extends Component {
             </button>
 
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul className="navbar-nav mr-auto">
+              <ul className="navbar-nav ml-auto">
                 { hooks_link }
                 { quota_link }
-              </ul>
-              <ul className="navbar-nav ml-auto">
                 { login }
                 { logout }
               </ul>
