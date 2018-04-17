@@ -27,7 +27,7 @@ in goswift-ui-web is the Web UI part, using yarn for packages
 
 .. code-block:: bash
 
-  cd goswift/static/goswift-ui/
+  cd ggoswift-ui-web
   yarn install
   # URL to backend server
   export REACT_APP_GOSWIFT_BACKEND_URL="http://localhost:6543" # or whatever url, if proxying /api to backend, leave empty
@@ -50,10 +50,13 @@ Backend
 
 .. code-block:: bash
 
-  pip install -r requirements.txt
+  pip3 install -r requirements.txt
+
   # For dev
+  python3 setup.py develop
   python3 goswift/app.py
   # For prod
+  python3 setup.py install
   gunicorn -b 0.0.0.0 goswift.app:app
 
 ========

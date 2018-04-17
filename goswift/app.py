@@ -193,7 +193,7 @@ AVAILABLE_VERSIONS = {
 DEFAULT_VERSION = V1Controller.version_string
 
 app = Flask(__name__)
-CORS(app, expose_headers=['X-Container-Bytes-Used', 'X-Container-Object-Count', 'X-Auth-Token'])
+CORS(app, expose_headers=['X-Container-Bytes-Used', 'X-Container-Object-Count', 'X-Auth-Token', 'X-Container-Write', 'X-Container-Read'])
 
 def get_token(data):
     auth = {
@@ -717,6 +717,24 @@ def test_hook_container(apiversion, project, container, filepath):
     return jsonify({'msg': 'called hook', 'res': res})
 
 
+@requires_auth
+@app.route('/api/<apiversion>/acl/project/<project>/<container>', methods=['GET'])
+def container_acl(apiversion, project, container):
+    headers = {
+        'X-Auth-Token': request.headers['X-Auth-Token'],
+        'X-Subject-Token': request.headers['X-Auth-Token']
+    }
+    ks_url = config['swift']['keystone_url'] + '/auth/tokens'
+    r = requests.get(ks_url, headers=headers)
+    if not r.status_code == 200:
+        abort(r.status_code)
+    r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
+    if r.status_code != 204:
+        abort(r.status_code)
+    acl_read = r.headers.get('X-Container-Read', None)
+    acl_write = r.headers.get('X-Container-Write', None)
+    return jsonify({'acl_read': acl_read, 'acl_write': acl_write})
+
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
     logging.info("New document:"+str(project)+":"+str(container)+":"+filepath)
@@ -792,11 +810,13 @@ def get_hook(apiversion, project,bucket):
         abort(r.status_code)
     hook = db_hooks.find_one({'project': project, 'bucket': bucket})
     url = None
+    regexp = ''
     if hook:
         url = hook['url']
-    if 'regexp' not in hook:
-        hook['regexp'] = ''
-    return jsonify({'hook': url, 'regexp': hook['regexp']})
+        if 'regexp' in hook:
+            regexp = hook['regexp']
+
+    return jsonify({'hook': url, 'regexp': regexp})
 
 
 @app.route('/api/<apiversion>/hook/<project>/<bucket>', methods=['POST'])

@@ -18,7 +18,8 @@ class ContainerInfo extends Component {
               'dialog': props.dialog || false,
               'onClose': props.onClose,
               'web_hook': '',
-              'hook_regexp': ''
+              'hook_regexp': '',
+              'public': false
           }
           this.project = Auth.getAuthData().project;
           this.handleDialogClose = this.handleDialogClose.bind(this);
@@ -26,6 +27,7 @@ class ContainerInfo extends Component {
           this.setHook = this.setHook.bind(this);
           this.updateHook = this.updateHook.bind(this);
           this.updateHookRegexp = this.updateHookRegexp.bind(this);
+          this.setVisibility = this.setVisibility.bind(this);
       };
       componentDidMount(){
           // get container object details
@@ -57,8 +59,9 @@ class ContainerInfo extends Component {
       componentWillReceiveProps(nextProps){
         var ctx = this;
         if(nextProps.dialog && nextProps.file !== undefined && nextProps.file!=null){
+            // console.log('show cont info',nextProps.file);
             Container.getContainerMeta(nextProps.file, function(res){
-                // console.log('container metas', res);
+                console.log('container metas', res);
                 if(res.error === undefined){
                     ctx.setState({
                         'container': nextProps.file,
@@ -68,22 +71,56 @@ class ContainerInfo extends Component {
                     // console.log('set metas',res,nextProps.dialog);
                 }
             });
-            Container.getContainerHook(this.state.container, function(res){
-                if(res.error !== undefined) {
-                    ctx.setState({'web_hook': '', 'hook_regexp': ''});
-                    console.log('failed to get container hook', res);
-                    return;
-                }
-                if(res.hook){
-                    console.log(res);
-                    ctx.setState({'web_hook': res.hook, 'hook_regexp': res.regexp});
-                }
-                else {
-                    ctx.setState({'web_hook': '', 'hook_regexp': ''});
-                }
-            });
+            if(this.state.container){
+                Container.getContainerHook(this.state.container, function(res){
+                    if(res.error !== undefined) {
+                        ctx.setState({'web_hook': '', 'hook_regexp': ''});
+                        console.log('failed to get container hook', res);
+                        return;
+                    }
+                    if(res.hook){
+                        ctx.setState({'web_hook': res.hook, 'hook_regexp': res.regexp});
+                    }
+                    else {
+                        ctx.setState({'web_hook': '', 'hook_regexp': ''});
+                    }
+                });
+                Container.getVisibility(this.state.container, function(res){
+                    if(res.error !== undefined) {
+                        console.log('failed to get container visibility', res);
+                        return;
+                    }
+                    if(res.acl_read !== null || res.acl_write !== null){
+                        ctx.setState({'public': true});
+                    }
+                    else {
+                        ctx.setState({'public': false});
+                    }
+                    console.log('visibility', res) ;
+                });
+            }
         }
       }
+  setVisibility(is_public){
+      var ctx = this;
+      return function(){
+          if(is_public){
+              console.log('set public');
+          }
+          else{
+              console.log('set private');
+          }
+          Container.setVisibility(ctx.state.container, is_public, '.r:*,.rlistings', function(res){
+
+              if(res && res.error !== undefined) {
+                  console.log('failed to set visibility');
+              }
+              else {
+                  ctx.setState({'public': is_public});
+              }
+          });
+      };
+  }
   setHook(){
         var ctx = this;
         return function(){
@@ -144,6 +181,20 @@ class ContainerInfo extends Component {
             <Card className="container">
                 <CardHeader title={'Project: ' +this.project}></CardHeader>
                 <CardText>
+                <RaisedButton
+                      label="Set public"
+                      secondary={true}
+                      keyboardFocused={true}
+                      disabled={this.state.public}
+                      onClick={this.setVisibility(true)}
+                />
+                <RaisedButton
+                      label="Set private"
+                      primary={true}
+                      keyboardFocused={true}
+                      disabled={!this.state.public}
+                      onClick={this.setVisibility(false)}
+                />
                 <GridList cellHeight={80}>
                     <GridTile>
                     <TextField
@@ -152,8 +203,8 @@ class ContainerInfo extends Component {
                         value={this.state.web_hook}
                         onChange={this.updateHook()}
                         />
-                        </GridTile>
-                        <GridTile>
+                    </GridTile>
+                    <GridTile>
                     <TextField
                         floatingLabelText="web hook regexp"
                         name="hook_regexp"
