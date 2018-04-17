@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 // import $ from 'jquery';
-import Dropzone from 'react-dropzone';
+// import Dropzone from 'react-dropzone';
 import CloudUploadIcon from 'material-ui-icons/CloudUpload';
 import RaisedButton from 'material-ui/RaisedButton';
 

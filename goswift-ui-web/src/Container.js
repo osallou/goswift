@@ -269,7 +269,7 @@ export class Container {
                 var headers = request.getAllResponseHeaders().split("\n");
                 for(var i=0;i<headers.length;i++){
                     var header = headers[i].replace(/[\n\r]+/g, '');;
-                    // console.log('cont meta header', header);
+                    //console.log('cont meta header', header);
                     if(header.startsWith('x-container-meta-access')){
                         continue;
                     }
@@ -358,7 +358,7 @@ export class Container {
             error: function(jqXHR, textStatus, error){
                 if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to delete: ', error);
-                if(error == "Conflict") {
+                if(error === "Conflict") {
                     error = "Container must be empty to be deleted";
                 }
                 callback({'error': error, 'status': jqXHR.status});
@@ -427,6 +427,50 @@ export class Container {
                 if(Container.hasExpired(jqXHR.status)){return;}
                 console.log('Failed to add directory: ' + error);
                 callback('error': error, 'status': jqXHR.status);
+            }
+        });
+    }
+    static setVisibility(bucket, is_public, acl, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '?format=json';
+        $.ajax({
+            url: swift_url,
+            beforeSend: function(xhr){
+                    xhr.setRequestHeader('X-Auth-Token', authData.token);
+                    if(is_public){
+                        xhr.setRequestHeader('X-Container-Read', acl);
+                    }
+                    else {
+                        xhr.setRequestHeader('X-Container-Read', '');
+                    }
+            },
+            type: "POST",
+            success: function(res){
+                callback({'msg': 'container visibility updated'});
+            },
+            error: function(jqXHR, textStatus, error){
+                console.log('Failed to update metadata: ' + error);
+                callback('error': error, 'status': jqXHR.status);
+            }
+        });
+    }
+    static getVisibility(bucket, callback){
+        var authData = Auth.getAuthData();
+        var config = Config.getConfig();
+        $.ajax({
+            url: config.url + "/api/v1/acl/project/" + authData.project + "/" + bucket,
+            beforeSend: function(xhr){xhr.setRequestHeader('X-Auth-Token', authData.token);},
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            success: function(res){
+                callback(res);
+            },
+            error: function(jqXHR, textStatus, error){
+                if(Container.hasExpired(jqXHR.status)){return;}
+                console.log('Failed to get visibility: ' + error);
+                callback({'error': error, 'status': jqXHR.status})
             }
         });
     }

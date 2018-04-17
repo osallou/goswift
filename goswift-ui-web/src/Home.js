@@ -36,7 +36,6 @@ import MenuItem from 'material-ui/MenuItem';
 
 import Divider from 'material-ui/Divider';
 
-import { GridList, GridTile } from 'material-ui/GridList';
 import Snackbar from 'material-ui/Snackbar';
 
 class Home extends Component {
@@ -255,7 +254,7 @@ class Home extends Component {
   showContainerInfo(containerName){
       var ctx = this;
       return function(){
-          // console.log('show cont info now', containerName);
+          console.log('show cont info now', containerName);
           ctx.setState({containerInfoDialog: true, containerInfoName: containerName});
       }
   }
