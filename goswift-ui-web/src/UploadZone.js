@@ -178,7 +178,7 @@ class UploadZone extends Component {
             }}>
             <RaisedButton
              primary={true}
-             label="Upload file"
+             label="Import a file"
              icon={<CloudUploadIcon/>}
              />
             <input onChange={this.onFileUpload} type="file" name="myfile" style={{cursor: "pointer", opacity: 0, position: "absolute", left: 0, top:0}} />
