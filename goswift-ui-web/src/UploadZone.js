@@ -173,14 +173,15 @@ class UploadZone extends Component {
         <div className="upload-btn-wrapper" style={{
                 position: "relative",
                 overflow: "hidden",
-                display: "inline-block"
+                display: "inline-block",
+                cursor: "pointer"
             }}>
             <RaisedButton
              primary={true}
              label="Upload file"
              icon={<CloudUploadIcon/>}
              />
-            <input onChange={this.onFileUpload} type="file" name="myfile" style={{opacity: 0, position: "absolute", left: 0, top:0}} />
+            <input onChange={this.onFileUpload} type="file" name="myfile" style={{cursor: "pointer", opacity: 0, position: "absolute", left: 0, top:0}} />
         </div>
 
         </div>

@@ -180,7 +180,7 @@ class ContainerFile extends Component {
             dialog={this.state.showDetails}/>
         }
             {!this.isDirectory() && <p>{this.basename()}</p>}
-            {this.isDirectory() && <p onClick={this.gotoFolder()}><FolderIcon/> {this.basename()}</p>}
+            {this.isDirectory() && <p style={{cursor: "pointer"}} onClick={this.gotoFolder()}><FolderIcon/> {this.basename()}</p>}
         </TableRowColumn>
         <TableRowColumn>
             {!this.isDirectory() && <p>{this.secondaryInfo()}</p>}
