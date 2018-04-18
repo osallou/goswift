@@ -36,6 +36,7 @@ import MenuItem from 'material-ui/MenuItem';
 
 import Divider from 'material-ui/Divider';
 
+import { GridList, GridTile } from 'material-ui/GridList';
 import Snackbar from 'material-ui/Snackbar';
 
 import './Home.css';
@@ -256,7 +257,7 @@ class Home extends Component {
   showContainerInfo(containerName){
       var ctx = this;
       return function(){
-          console.log('show cont info now', containerName);
+          // console.log('show cont info now', containerName);
           ctx.setState({containerInfoDialog: true, containerInfoName: containerName});
       }
   }
@@ -593,7 +594,7 @@ class Home extends Component {
 
         { this.state.search && <div className="col-sm"><SearchContainer container={this.state.container}/></div>}
         { !this.state.search && <div className="col-sm">
-        { this.state.container &&
+            { this.state.container &&
             <div>
             <nav className="navbar">
             <li class="nav-item dropdown">
@@ -601,18 +602,19 @@ class Home extends Component {
                 <RaisedButton
                  primary={true}
                  label="New"
-
                  />
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="#"><form className="form-inline my-2 my-lg-0">
+                <a class="dropdown-item" href="#">
+                <form className="form-inline my-2 my-lg-0">
                     <RaisedButton
                      primary={true}
                      onClick={this.showNew('folder')}
                      label="Folder"
                      icon={<CreateNewFolderIcon/>}
                      />
-                 </form></a>
+                 </form>
+                 </a>
                 <a class="dropdown-item" href="#">{ this.state.container &&
                 <form className="form-inline my-2 my-lg-0">
                 <UploadZone
@@ -639,7 +641,7 @@ class Home extends Component {
             <div className="row" id="breadcrumb_row">
               <ul className="breadcrumb_custom">
                   <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>{this.state.container && this.state.container.name}</li>
-              {this.state.path.map((cpath, index) => (
+                  {this.state.path.map((cpath, index) => (
                   <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}
               </ul>
