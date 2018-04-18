@@ -1,0 +1,30 @@
+.nav-item.dropdown {
+    list-style-type: none;
+}
+
+.dropdown-toggle::after {
+    display:none
+}
+
+.breadcrumb_custom {
+    list-style: none;
+    overflow: hidden;
+    font: 27px Sans-Serif;
+}
+
+.breadcrumb_custom li {
+    float: left;
+}
+
+.breadcrumb-item{
+    color: #646464;
+    cursor: pointer;
+}
+
+#breadcrumb_row{
+    margin-top: 50px;
+}
+
+svg{
+  vertical-align: middle;
+}
