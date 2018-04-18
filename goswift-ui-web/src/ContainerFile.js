@@ -179,9 +179,9 @@ class ContainerFile extends Component {
             swift_url={this.state.swift_url}
             dialog={this.state.showDetails}/>
         }
-            {!this.isDirectory() && <p style={{cursor: "pointer"}} onClick={this.showInfo()}>{this.basename()}</p>}
-            {this.isDirectory() && <p style={{cursor: "pointer"}} onClick={this.gotoFolder()}><FolderIcon/> {this.basename()}</p>}
-            
+            {!this.isDirectory() && <div style={{cursor: "pointer"}} onClick={this.showInfo()}>{this.basename()} <InfoIcon aria-label="Info" /></div>}
+            {this.isDirectory() && <div style={{cursor: "pointer"}} onClick={this.gotoFolder()}><FolderIcon/> {this.basename()}</div>}
+
         </TableRowColumn>
         <TableRowColumn>
             {!this.isDirectory() && <p>{this.secondaryInfo()}</p>}
@@ -201,6 +201,7 @@ class ContainerFile extends Component {
                   <CloudDownloadIcon />
                 </IconButton>
         }
+
         </TableRowColumn>
         </TableRow>
 
