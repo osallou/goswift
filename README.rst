@@ -2,18 +2,25 @@
 About
 =====
 
-Test project for an Openstack swift Web UI
+Openstack swift Web UI
 
-Early development
+========
+Features
+========
 
+* File upload (<5g else use swift client) /download
+* File/directory browsing
+* File metadata edition
+* Projet quota management
+* Set bucket as public/private
+* Web hooks to trigger external services on file upload/modifications
+* Temporary urls management to share a file with external users/apps
+* Content indexation and search (based on file names, not content)
+* Authentication via keystone
 
-=====
-swift
-=====
-
-===========
-Development
-===========
+============
+Installation
+============
 
 Config
 ------
