@@ -37,6 +37,7 @@ in goswift-ui-web is the Web UI part, using yarn for packages
   cd ggoswift-ui-web
   yarn install
   # URL to backend server
+  export REACT_APP_GOSWIFT_SWITF_URL="http://swift_url"
   export REACT_APP_GOSWIFT_BACKEND_URL="http://localhost:6543" # or whatever url, if proxying /api to backend, leave empty
   yarn build
 
@@ -49,7 +50,8 @@ To launch dev service
 
   yarn start
 
- In production simply serve build directory in your web server
+
+In production simply serve build directory in your web server
 
 
 Backend
