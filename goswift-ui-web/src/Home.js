@@ -38,6 +38,8 @@ import Divider from 'material-ui/Divider';
 
 import Snackbar from 'material-ui/Snackbar';
 
+import './Home.css';
+
 class Home extends Component {
   constructor(props) {
         super(props);
@@ -597,26 +599,38 @@ class Home extends Component {
             { this.state.container &&
             <div>
             <nav className="navbar">
+            <li class="nav-item dropdown">
+              <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <RaisedButton
+                 primary={true}
+                 label="New"
+                 />
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">
                 <form className="form-inline my-2 my-lg-0">
                     <RaisedButton
                      primary={true}
                      onClick={this.showNew('folder')}
-                     label="Create folder"
+                     label="Folder"
                      icon={<CreateNewFolderIcon/>}
                      />
                  </form>
-                 { this.state.container &&
-                 <form className="form-inline my-2 my-lg-0">
-                 <UploadZone
-                     swift_url={this.state.swift_url}
-                     path={this.state.path.join()}
-                     onUpload={this.fileUpload}
-                     onProgress={this.fileUploadProgress}
-                     onOver={this.fileUploadOver}
-                     onError={this.fileUploadError}
-                 />
-                 </form>
-                }
+                 </a>
+                <a class="dropdown-item" href="#">{ this.state.container &&
+                <form className="form-inline my-2 my-lg-0">
+                <UploadZone
+                    swift_url={this.state.swift_url}
+                    path={this.state.path.join()}
+                    onUpload={this.fileUpload}
+                    onProgress={this.fileUploadProgress}
+                    onOver={this.fileUploadOver}
+                    onError={this.fileUploadError}
+                />
+                </form>
+               }</a>
+              </div>
+            </li>
                <form className="form-inline my-2 my-lg-0">
                    <RaisedButton
                     primary={true}
@@ -626,15 +640,14 @@ class Home extends Component {
                     />
                 </form>
             </nav>
-            <nav className="navbar navbar-light">
-              <ol className="breadcrumb">
-                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>[{this.state.container && this.state.container.name}]:root</li>
-              {this.state.path.map((cpath, index) => (
+            <div className="row" id="breadcrumb_row">
+              <ul className="breadcrumb_custom">
+                  <li key="-1" className="breadcrumb-item" onClick={this.gotoFolderIndex(-1)}>{this.state.container && this.state.container.name}</li>
+                  {this.state.path.map((cpath, index) => (
                   <li key={index} className="breadcrumb-item" onClick={this.gotoFolderIndex(index)}>{cpath.replace('/','')}</li>
               ))}
-              </ol>
-
-            </nav>
+              </ul>
+            </div>
             </div>
 
 
@@ -672,7 +685,7 @@ class Home extends Component {
               </div>
             </Dialog>
 
-            <Table >
+            <Table className="table-striped">
             <TableHeader>
             <TableRow>
             <TableHeaderColumn>Name</TableHeaderColumn>

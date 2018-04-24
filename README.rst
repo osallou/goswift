@@ -2,18 +2,25 @@
 About
 =====
 
-Test project for an Openstack swift Web UI
+Openstack swift Web UI
 
-Early development
+========
+Features
+========
 
+* File upload (<5g else use swift client) /download
+* File/directory browsing
+* File metadata edition
+* Projet quota management
+* Set bucket as public/private
+* Web hooks to trigger external services on file upload/modifications
+* Temporary urls management to share a file with external users/apps
+* Content indexation and search (based on file names, not content)
+* Authentication via keystone
 
-=====
-swift
-=====
-
-===========
-Development
-===========
+============
+Installation
+============
 
 Config
 ------
@@ -30,6 +37,7 @@ in goswift-ui-web is the Web UI part, using yarn for packages
   cd ggoswift-ui-web
   yarn install
   # URL to backend server
+  export REACT_APP_GOSWIFT_SWITF_URL="http://swift_url"
   export REACT_APP_GOSWIFT_BACKEND_URL="http://localhost:6543" # or whatever url, if proxying /api to backend, leave empty
   yarn build
 
@@ -42,7 +50,8 @@ To launch dev service
 
   yarn start
 
- In production simply serve build directory in your web server
+
+In production simply serve build directory in your web server
 
 
 Backend
