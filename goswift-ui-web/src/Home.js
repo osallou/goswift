@@ -228,6 +228,9 @@ class Home extends Component {
               total += msg.containers[i].bytes;
           }
           ctx.setState({'containers': msg.containers, 'quota': msg.quota, 'used': total});
+          if(msg.containers.length>=1){
+              ctx.showContainer(null, null, 0);
+          }
 
       });
 
@@ -254,7 +257,7 @@ class Home extends Component {
   showContainerInfo(containerName){
       var ctx = this;
       return function(){
-          console.log('show cont info now', containerName);
+          // console.log('show cont info now', containerName);
           ctx.setState({containerInfoDialog: true, containerInfoName: containerName});
       }
   }
