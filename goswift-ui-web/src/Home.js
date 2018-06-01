@@ -599,15 +599,15 @@ class Home extends Component {
             { this.state.container &&
             <div>
             <nav className="navbar">
-            <li class="nav-item dropdown">
-              <a class="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <li className="nav-item dropdown">
+              <a className="nav-link" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <RaisedButton
                  primary={true}
                  label="New"
                  />
               </a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="#">
+              <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a className="dropdown-item" href="#">
                 <form className="form-inline my-2 my-lg-0">
                     <RaisedButton
                      primary={true}
@@ -617,7 +617,7 @@ class Home extends Component {
                      />
                  </form>
                  </a>
-                <a class="dropdown-item" href="#">{ this.state.container &&
+                <a className="dropdown-item" href="#">{ this.state.container &&
                 <form className="form-inline my-2 my-lg-0">
                 <UploadZone
                     swift_url={this.state.swift_url}

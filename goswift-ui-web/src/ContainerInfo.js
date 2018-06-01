@@ -8,6 +8,7 @@ import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import { GridList, GridTile } from 'material-ui/GridList';
 import RaisedButton from 'material-ui/RaisedButton';
+import Checkbox from 'material-ui/Checkbox';
 
 class ContainerInfo extends Component {
     constructor(props) {
@@ -19,7 +20,8 @@ class ContainerInfo extends Component {
               'onClose': props.onClose,
               'web_hook': '',
               'hook_regexp': '',
-              'public': false
+              'public': false,
+              'website': false
           }
           this.project = Auth.getAuthData().project;
           this.handleDialogClose = this.handleDialogClose.bind(this);
@@ -28,6 +30,8 @@ class ContainerInfo extends Component {
           this.updateHook = this.updateHook.bind(this);
           this.updateHookRegexp = this.updateHookRegexp.bind(this);
           this.setVisibility = this.setVisibility.bind(this);
+          this.handleWebsite = this.handleWebsite.bind(this);
+
       };
       componentDidMount(){
           // get container object details
@@ -38,6 +42,7 @@ class ContainerInfo extends Component {
                       console.log('failed to get container', res);
                       return;
                   }
+                  console.log('metas', res);
                   ctx.setState('metas': res);
               });
               Container.getContainerHook(this.state.container, function(res){
@@ -96,6 +101,13 @@ class ContainerInfo extends Component {
                     else {
                         ctx.setState({'public': false});
                     }
+                    if(res.web){
+                        console.log('web listing enabled');
+                        ctx.setState({'website': true})
+                    }
+                    else {
+                        ctx.setState({'website': false})
+                    }
                     console.log('visibility', res) ;
                 });
             }
@@ -110,7 +122,7 @@ class ContainerInfo extends Component {
           else{
               console.log('set private');
           }
-          Container.setVisibility(ctx.state.container, is_public, '.r:*,.rlistings', function(res){
+          Container.setVisibility(ctx.state.container, is_public, '.r:*,.rlistings', ctx.web, function(res){
 
               if(res && res.error !== undefined) {
                   console.log('failed to set visibility');
@@ -157,6 +169,21 @@ class ContainerInfo extends Component {
           this.state.onClose(this.state.file, this.state.meta);
       }
   }
+  handleWebsite(event){
+      var ctx = this;
+      return function(event){
+          console.log('website',event.target.checked);
+          var value = event.target.checked;
+          Container.setVisibility(ctx.state.container, ctx.state.public, '.r:*,.rlistings', event.target.checked, function(res){
+              if(res && res.error !== undefined) {
+                  console.log('failed to set visibility');
+              }
+              else {
+                  ctx.setState({'website': value});
+              }
+          });
+      };
+  }
   render() {
       const actions = [
             <FlatButton
@@ -195,6 +222,12 @@ class ContainerInfo extends Component {
                       disabled={!this.state.public}
                       onClick={this.setVisibility(false)}
                 />
+                <Checkbox
+                    label="Enable website listing (needs public visibility)"
+                    checked={this.state.website}
+                    onCheck={this.handleWebsite()}
+                />
+
                 <GridList cellHeight={80}>
                     <GridTile>
                     <TextField

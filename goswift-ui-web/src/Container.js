@@ -430,7 +430,7 @@ export class Container {
             }
         });
     }
-    static setVisibility(bucket, is_public, acl, callback){
+    static setVisibility(bucket, is_public, acl, website, callback){
         var authData = Auth.getAuthData();
         var config = Config.getConfig();
         var swift_url = config.swift_url + '/v1/AUTH_' + authData.project + '/' + bucket + '?format=json';
@@ -443,6 +443,14 @@ export class Container {
                     }
                     else {
                         xhr.setRequestHeader('X-Container-Read', '');
+                    }
+                    if(website){
+                        xhr.setRequestHeader('X-Container-Meta-Web-Listings', 'true');
+                        xhr.setRequestHeader('X-Container-Meta-Web-Index', 'index.html');
+                    }
+                    else {
+                        xhr.setRequestHeader('X-Container-Meta-Web-Listings', '');
+                        xhr.setRequestHeader('X-Container-Meta-Web-Index', '');
                     }
             },
             type: "POST",

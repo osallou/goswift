@@ -11,6 +11,7 @@ from time import time
 import crypt
 import uuid
 import re
+import json
 
 import smtplib
 from email.message import EmailMessage
@@ -731,9 +732,10 @@ def container_acl(apiversion, project, container):
     r = requests.head(config['swift']['swift_url'] + '/v1/AUTH_' + str(project) + '/' + container+'?format=json' , headers=headers)
     if r.status_code != 204:
         abort(r.status_code)
+    web = r.headers.get('X-Container-Meta-Web-Listings', False)
     acl_read = r.headers.get('X-Container-Read', None)
     acl_write = r.headers.get('X-Container-Write', None)
-    return jsonify({'acl_read': acl_read, 'acl_write': acl_write})
+    return jsonify({'acl_read': acl_read, 'acl_write': acl_write, 'web': web})
 
 @app.route('/api/<apiversion>/index/project/<project>/<container>/<path:filepath>', methods=['POST', 'PUT'])
 def update_index_container(apiversion, project, container, filepath):
